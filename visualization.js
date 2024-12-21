@@ -15,7 +15,7 @@ function renderTrackVisualization(trackName) {
     return;
   }
 
-  // Render rows and beats
+  // Render rows and steps
   const categories = [
     { type: "Kick", notes: [DRUMS.KICK, DRUMS.KICK_ALT] },
     { type: "Snare", notes: [DRUMS.SNARE, DRUMS.SNARE_ALT, DRUMS.CLAP] },

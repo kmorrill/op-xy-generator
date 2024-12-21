@@ -34,12 +34,12 @@ function setupMidiInputs() {
   });
 }
 
-function playGeneratedNotes(beat) {
-  console.log(`Playing notes for beat: ${beat}`);
+function playGeneratedNotes(step) {
+  console.log(`Playing notes for step: ${step}`);
   Object.keys(generationState.tracks).forEach((trackName) => {
     const track = generationState.tracks[trackName];
     track.forEach((note) => {
-      if (note.start === beat) {
+      if (note.start === step) {
         console.log(`Note ON: ${note.note} at velocity ${note.velocity}`);
         sendMidiNoteOn(
           MIDI_CHANNELS[trackName],
@@ -48,7 +48,7 @@ function playGeneratedNotes(beat) {
           midiOutput
         );
       }
-      if (note.end === beat) {
+      if (note.end === step) {
         console.log(`Note OFF: ${note.note}`);
         sendMidiNoteOff(MIDI_CHANNELS[trackName], note.note, midiOutput);
       }

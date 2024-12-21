@@ -1,7 +1,10 @@
 let clockRunning = false;
 let clockTickCount = 0;
 const TICKS_PER_QUARTER = 24;
-const TICKS_PER_BAR = TICKS_PER_QUARTER * 4;
+const STEPS_PER_BEAT = 4;
+const TICKS_PER_STEP = TICKS_PER_QUARTER / STEPS_PER_BEAT; // 6
+
+const TICKS_PER_BAR = TICKS_PER_QUARTER * 4; // 96 ticks per bar
 
 function handleMidiMessage(message) {
   const [status, data1, data2] = message.data;
@@ -42,14 +45,14 @@ function stopClock() {
 
 function handleClockTick() {
   clockTickCount++;
-  // console.log(`Clock tick: ${clockTickCount}`);
 
-  if (clockTickCount % TICKS_PER_QUARTER === 0) {
-    const currentBeat = Math.floor(clockTickCount / TICKS_PER_QUARTER) % 32;
-    console.log(`Processing beat: ${currentBeat + 1}`);
-    playGeneratedNotes(currentBeat + 1);
+  if (clockTickCount % TICKS_PER_STEP === 0) {
+    const currentStep = Math.floor(clockTickCount / TICKS_PER_STEP) % 32;
+    console.log(`Processing step: ${currentStep + 1}`);
+    playGeneratedNotes(currentStep + 1); // Now correctly represents a step
 
-    if (clockTickCount >= TICKS_PER_QUARTER * 32) {
+    if (clockTickCount >= TICKS_PER_STEP * 32) {
+      // 6 * 32 = 192 ticks
       console.log("Resetting clock tick count");
       clockTickCount = 0;
     }
