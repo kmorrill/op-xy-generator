@@ -27,6 +27,11 @@ let generationState = {
 
 function regenerateTracks() {
   generationState.tracks.drums = generateDrumPattern();
+  generationState.tracks.bass = regenerateBassLine();
+
   console.log("Generated drum pattern:", generationState.tracks.drums);
+  console.log("Generated bass line:", generationState.tracks.bass);
   renderAllVisualizations();
 }
+
+window.regenerateTracks = regenerateTracks;

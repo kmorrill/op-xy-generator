@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Generation System</title>
-    <script src="main.js"></script>
-    <script src="midi.js"></script>
-    <script src="generation/main.js"></script>
-    <script src="generation/drum.js"></script>
-    <script src="visualization.js"></script>
-    <script src="clock.js"></script>
+
+    <script src="generation/main.js" defer></script>
+    <script src="generation/drum.js" defer></script>
+    <script src="generation/bass.js" defer></script>
+    <script src="main.js" defer></script>
+    <script src="midi.js" defer></script>
+    <script src="visualization.js" defer></script>
+    <script src="clock.js" defer></script>
   
 
 </head>
@@ -134,6 +136,7 @@
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
                             </tr>
                             <tr>
                                 <td style="white-space: nowrap;">Snare</td>
@@ -143,6 +146,7 @@
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
@@ -204,6 +208,7 @@
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -211,27 +216,110 @@
             </div>
 
             <!-- Basslines -->
-            <div id="basslines" class="track-section">
-                <h3>Bass Line</h3>
-                <table>
-                    <tr>
-                        <td><label for="bass-phrase">Phrase Evolution:</label></td>
-                        <td><input type="range" id="bass-phrase" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="bass-rhythm">Rhythmic Complexity:</label></td>
-                        <td><input type="range" id="bass-rhythm" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="bass-groove">Groove Tightness:</label></td>
-                        <td><input type="range" id="bass-groove" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="bass-movement">Bass Movement:</label></td>
-                        <td><input type="range" id="bass-movement" class="knob" min="0" max="100"></td>
-                    </tr>
-                </table>
-                <div id="bass-visualization" style="width: 100%; height: 200px;"></div>
+            <div id="basslines" class="track-section" style="display: flex;">
+                <div class="controls" style="flex: 1;">
+                    <h3>Bass Line</h3>
+                    <table>
+                        <tr>
+                            <td><label for="bass-phrase">Phrase Evolution:</label></td>
+                            <td><input type="range" id="bass-phrase" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="bass-rhythm">Rhythmic Complexity:</label></td>
+                            <td><input type="range" id="bass-rhythm" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="bass-groove">Groove Tightness:</label></td>
+                            <td><input type="range" id="bass-groove" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="bass-movement">Bass Movement:</label></td>
+                            <td><input type="range" id="bass-movement" class="knob" min="0" max="100"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sequence" style="flex: 2; padding-left: 20px;">
+                    <h4>Bass Line Visualization</h4>
+                    <table class="sequence-table" style="border-collapse: collapse; width: 100%; text-align: center;">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>1</th>
+                                <th>2</th>
+                                <th>3</th>
+                                <th>4</th>
+                                <th>5</th>
+                                <th>6</th>
+                                <th>7</th>
+                                <th>8</th>
+                                <th>9</th>
+                                <th>10</th>
+                                <th>11</th>
+                                <th>12</th>
+                                <th>13</th>
+                                <th>14</th>
+                                <th>15</th>
+                                <th>16</th>
+                                <th>17</th>
+                                <th>18</th>
+                                <th>19</th>
+                                <th>20</th>
+                                <th>21</th>
+                                <th>22</th>
+                                <th>23</th>
+                                <th>24</th>
+                                <th>25</th>
+                                <th>26</th>
+                                <th>27</th>
+                                <th>28</th>
+                                <th>29</th>
+                                <th>30</th>
+                                <th>31</th>
+                                <th>32</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="white-space: nowrap;">Bass</td>
+                                <td class="hit" style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
             </div>
 
             <!-- Chords -->
