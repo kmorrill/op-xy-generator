@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Generation System</title>
+    <script src="index.js"></script>
+
+</head>
+<body>
+    <header>
+        <h1>Music Generation System</h1>
+        <p>Configure and generate MIDI tracks synced with your OP-XY sequencer.</p>
+    </header>
+
+    <main>
+        <!-- Genre Selection -->
+        <section id="genre-selection" class="config-section">
+            <h2>Genre</h2>
+            <label for="genre-select">Genre:</label>
+            <select id="genre-select" class="input-dropdown">
+                <option value="edm">Electronic/EDM</option>
+                <option value="synthwave">Synthwave</option>
+                <option value="hiphop">Hip Hop</option>
+                <option value="ambient">Ambient</option>
+                <option value="house">House</option>
+                <option value="experimental">Experimental/Glitch</option>
+            </select>
+        </section>
+
+        <!-- Key and Scale Selection -->
+        
+                <section id="key-scale-selection" class="config-section">
+            <h2>Key and Scale</h2>
+            <label for="key-select">Key:</label>
+            <select id="key-select" class="input-dropdown">
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="G">G</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+            </select>
+
+            <label for="scale-select">Scale:</label>
+            <select id="scale-select" class="input-dropdown">
+                <option value="major">Major</option>
+                <option value="minor">Minor</option>
+                <option value="dorian">Dorian</option>
+                <option value="mixolydian">Mixolydian</option>
+                <option value="lydian">Lydian</option>
+            </select>
+        </section>
+
+
+        <!-- Track Configurations -->
+        <section id="track-configurations" class="config-section">
+            <h2>Track Configurations</h2>
+
+            <!-- Drum Patterns -->
+            <div id="drum-patterns" class="track-section" style="display: flex;">
+                <div class="controls" style="flex: 1;">
+                    <h3>Drum Patterns</h3>
+                    <table>
+                        <tr>
+                            <td><label for="drum-density">Density:</label></td>
+                            <td><input type="range" id="drum-density" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="drum-variation">Variation:</label></td>
+                            <td><input type="range" id="drum-variation" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="drum-balance">Balance:</label></td>
+                            <td><input type="range" id="drum-balance" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="drum-repetition">Repetition:</label></td>
+                            <td><input type="range" id="drum-repetition" class="knob" min="0" max="100"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sequence" style="flex: 2; padding-left: 20px;">
+                    <h4>Drum Sequence</h4>
+                    <table class="sequence-table" style="border-collapse: collapse; width: 100%; text-align: center;">
+                        <thead>
+                            <tr>
+                                <th>Hit Type</th>
+                                <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th>
+                                <th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th>
+                                <th>17</th><th>18</th><th>19</th><th>20</th><th>21</th><th>22</th><th>23</th><th>24</th>
+                                <th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th><th>31</th><th>32</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="white-space: nowrap;">Kick</td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <tr>
+                                <td style="white-space: nowrap;">Snare</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <tr>
+                                <td style="white-space: nowrap;">Hi-Hat</td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Basslines -->
+            <div id="basslines" class="track-section">
+                <h3>Basslines</h3>
+                <table>
+                    <tr>
+                        <td><label for="bass-phrase">Phrase Evolution:</label></td>
+                        <td><input type="range" id="bass-phrase" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="bass-rhythm">Rhythmic Complexity:</label></td>
+                        <td><input type="range" id="bass-rhythm" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="bass-groove">Groove Tightness:</label></td>
+                        <td><input type="range" id="bass-groove" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="bass-movement">Bass Movement:</label></td>
+                        <td><input type="range" id="bass-movement" class="knob" min="0" max="100"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Chords -->
+            <div id="chords" class="track-section" style="display: flex;">
+                <div class="controls" style="flex: 1;">
+                    <h3>Chords</h3>
+                    <table>
+                        <tr>
+                            <td><label for="chord-complexity">Harmonic Complexity:</label></td>
+                            <td><input type="range" id="chord-complexity" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="chord-variation">Progression Variation:</label></td>
+                            <td><input type="range" id="chord-variation" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="chord-voicing">Voicing Spread:</label></td>
+                            <td><input type="range" id="chord-voicing" class="knob" min="0" max="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="chord-rhythm">Rhythmic Placement:</label></td>
+                            <td><input type="range" id="chord-rhythm" class="knob" min="0" max="100"></td>
+                        </tr>
+                    </table>
+                    <h4>Augment Settings</h4>
+                    <table>
+                        <tr>
+                            <td><label for="chord-drones">Root Note Drone:</label></td>
+                            <td><input type="checkbox" id="chord-drones" class="checkbox"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="chord-extensions">Route 7ths and 9ths to Separate Track:</label></td>
+                            <td><input type="checkbox" id="chord-extensions" class="checkbox"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sequence" style="flex: 2; padding-left: 20px;">
+                    <h4>Chord Sequence</h4>
+                    <table class="sequence-table" style="border-collapse: collapse; width: 100%; text-align: center;">
+                        <thead>
+                            <tr>
+                                <th>Note</th>
+                                <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th>
+                                <th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th>
+                                <th>17</th><th>18</th><th>19</th><th>20</th><th>21</th><th>22</th><th>23</th><th>24</th>
+                                <th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th><th>31</th><th>32</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="white-space: nowrap;">C</td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <tr>
+                                <td style="white-space: nowrap;">D</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td class="hit" style="border: 1px solid black;">&bull;</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <!-- Add other notes dynamically based on the selected key -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
+            </div>
+
+            <!-- Melodies -->
+            <div id="melodies" class="track-section">
+                <h3>Melodies</h3>
+                <table>
+                    <tr>
+                        <td><label for="melody-contour">Melodic Contour:</label></td>
+                        <td><input type="range" id="melody-contour" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="melody-rhythm">Rhythm:</label></td>
+                        <td><input type="range" id="melody-rhythm" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="melody-register">Register:</label></td>
+                        <td><input type="range" id="melody-register" class="knob" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="melody-harmony">Harmony:</label></td>
+                        <td><input type="range" id="melody-harmony" class="knob" min="0" max="100"></td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+    <section id="melodic-call-response" class="config-section">
+            <h2>Melodic Call Response</h2>
+            <table>
+                <tr>
+                    <td><label for="melody-response-delay">Response Delay:</label></td>
+                    <td><input type="range" id="melody-response-delay" class="knob" min="0" max="100"></td>
+                </tr>
+                <tr>
+                    <td><label for="melody-response-complexity">Response Complexity:</label></td>
+                    <td><input type="range" id="melody-response-complexity" class="knob" min="0" max="100"></td>
+                </tr>
+                <tr>
+                    <td><label for="melody-call-balance">Call-Response Balance:</label></td>
+                    <td><input type="range" id="melody-call-balance" class="knob" min="0" max="100"></td>
+                </tr>
+                <tr>
+                    <td><label for="melody-response-register">Response Register:</label></td>
+                    <td><select id="melody-response-register" class="input-dropdown">
+                        <option value="same">Same</option>
+                        <option value="higher">Higher</option>
+                        <option value="lower">Lower</option>
+                        <option value="alternating">Alternating</option>
+                    </select></td>
+                </tr>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>Music Generation System &copy; 2024</p>
+    </footer>
+</body>
+</html>
