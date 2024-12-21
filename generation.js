@@ -11,28 +11,28 @@ const MIDI_CHANNELS = {
 
 // Drum MIDI notes
 const DRUMS = {
-  KICK: 53, // F2
-  KICK_ALT: 54, // F#2
-  SNARE: 43, // G1
-  SNARE_ALT: 44, // G#1
-  RIM: 45, // A1
-  CLAP: 46, // A#1
-  TAMBOURINE: 47, // B1
-  SHAKER: 48, // C2
-  CLOSED_HAT: 49, // C#2
-  OPEN_HAT: 50, // D2
-  PEDAL_HAT: 51, // D#2
-  LOW_TOM: 53, // F2
-  CRASH: 54, // F#2
-  MID_TOM: 55, // G2
-  RIDE: 56, // G#2
-  HIGH_TOM: 57, // A2
-  CONGA_LOW: 59, // B2
-  CONGA_HIGH: 60, // C3
-  COWBELL: 61, // C#3
-  GUIRO: 62, // D3
-  METAL: 63, // D#3
-  CHI: 64, // E3
+  KICK: 53,
+  KICK_ALT: 54,
+  SNARE: 55,
+  SNARE_ALT: 56,
+  RIM: 57,
+  CLAP: 58,
+  TAMBOURINE: 59,
+  SHAKER: 60,
+  CLOSED_HAT: 61,
+  OPEN_HAT: 62,
+  PEDAL_HAT: 63,
+  LOW_TOM: 65,
+  CRASH: 66,
+  MID_TOM: 67,
+  RIDE: 68,
+  HIGH_TOM: 69,
+  CONGA_LOW: 71,
+  CONGA_HIGH: 72,
+  COWBELL: 73,
+  GUIRO: 74,
+  METAL: 75,
+  CHI: 76,
 };
 
 // State
