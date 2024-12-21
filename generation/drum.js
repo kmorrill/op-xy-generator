@@ -189,40 +189,55 @@ function calculateVelocity(step, variation) {
 }
 
 function applyVariation(pattern, variation) {
-  return pattern.map((note) => {
+  // Apply timing and velocity variations
+  const variedPattern = pattern.map((note) => {
     // Apply timing variations
-    const timingOffset = Math.random() * variation * 0.5 - 0.25;
-    const newStart = Math.max(1, note.start + timingOffset);
+    const timingOffset = Math.random() * variation * 0.5 - 0.25; // ±0.25 steps based on variation
+    let newStart = note.start + timingOffset;
+
+    // Round to the nearest integer
+    newStart = Math.round(newStart);
+
+    // Clamp newStart to be within 1 to 32
+    newStart = Math.max(1, Math.min(newStart, 32));
+
+    // Set newEnd as newStart + 1, clamped to 32
+    let newEnd = newStart + 1;
+    newEnd = Math.min(newEnd, 32);
+
+    // Apply velocity variation
+    let newVelocity = note.velocity + (Math.random() * 20 - 10) * variation;
+    newVelocity = Math.max(30, Math.min(newVelocity, 127));
 
     return {
       ...note,
       start: newStart,
-      end: newStart + 1,
-      velocity: Math.max(
-        30,
-        Math.min(127, note.velocity + (Math.random() * 20 - 10) * variation)
-      ),
+      end: newEnd,
+      velocity: newVelocity,
     };
   });
 
   // Add fills based on variation
   if (Math.random() < variation * 0.3) {
-    const fillStart = Math.floor(Math.random() * 24) + 4;
+    const fillStart = Math.floor(Math.random() * 24) + 4; // Ensures fills start between step 4 and 27
     const fillNotes = [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM];
 
     for (let i = 0; i < 4; i++) {
+      const currentStep = fillStart + i;
+      if (currentStep > 32) break; // Prevent exceeding the maximum step
+
       if (Math.random() < 0.6) {
-        pattern.push({
+        variedPattern.push({
           note: fillNotes[Math.floor(Math.random() * fillNotes.length)],
-          velocity: 70 + Math.floor(Math.random() * 40),
-          start: fillStart + i,
-          end: fillStart + i + 1,
+          velocity: 70 + Math.floor(Math.random() * 40), // Velocity between 70 and 109
+          start: currentStep,
+          end: currentStep + 1,
         });
       }
     }
   }
 
-  return pattern;
+  return variedPattern;
 }
 
 function applyRepetition(pattern, repetition, genre) {
