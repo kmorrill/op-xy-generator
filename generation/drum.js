@@ -136,7 +136,7 @@ function generateDrumPattern() {
       if (Math.random() < adjustedProb) {
         pattern.push({
           note: parseInt(note),
-          velocity: calculateVelocity(step, variation),
+          velocity: Math.floor(calculateVelocity(step, variation)),
           start: step,
           end: step + 1,
         });
@@ -153,7 +153,7 @@ function generateDrumPattern() {
       if (Math.random() < adjustedProb) {
         pattern.push({
           note: parseInt(note),
-          velocity: calculateVelocity(step, variation),
+          velocity: Math.floor(calculateVelocity(step, variation)),
           start: step,
           end: step + 1,
         });
@@ -182,10 +182,15 @@ function generateDrumPattern() {
 function calculateVelocity(step, variation) {
   const baseVelocity = step % 4 === 0 ? 100 : 80;
   const randomRange = 30 * variation;
-  return Math.min(
+  // Ensure velocity calculation does not result in NaN and return an integer
+  const velocity = Math.min(
     127,
-    Math.max(30, baseVelocity + (Math.random() * randomRange - randomRange / 2))
+    Math.max(
+      30,
+      Math.floor(baseVelocity + (Math.random() * randomRange - randomRange / 2))
+    )
   );
+  return velocity;
 }
 
 function applyVariation(pattern, variation) {
@@ -208,6 +213,7 @@ function applyVariation(pattern, variation) {
     // Apply velocity variation
     let newVelocity = note.velocity + (Math.random() * 20 - 10) * variation;
     newVelocity = Math.max(30, Math.min(newVelocity, 127));
+    newVelocity = Math.floor(newVelocity); // Ensure velocity is an integer
 
     return {
       ...note,
