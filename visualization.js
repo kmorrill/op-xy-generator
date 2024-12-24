@@ -36,7 +36,7 @@ function renderTrackVisualization(trackName) {
     return;
   }
 
-  // For bass, chords, or melody, do the row-per-pitch approach
+  // For bass, chords, or melody, do the row-per-pitch approach with duration handling
   else if (
     trackName === "bass" ||
     trackName === "chords" ||
@@ -84,22 +84,49 @@ function renderTrackVisualization(trackName) {
       labelCell.textContent = noteLabel;
       row.appendChild(labelCell);
 
-      // Columns for steps 1..32
-      for (let step = 1; step <= 32; step++) {
-        const cell = document.createElement("td");
-        cell.style.border = "1px solid black";
+      // Get all notes for this pitch, sorted by start
+      const pitchNotes = notes
+        .filter((note) => note.note === pitch)
+        .sort((a, b) => a.start - b.start);
 
-        // The note is "active" if step in [note.start, note.end)
-        const isActive = notes.some(
-          (note) => note.note === pitch && step >= note.start && step < note.end
-        );
+      let step = 1; // Initialize step counter
+      let noteIndex = 0; // Initialize note index
 
-        if (isActive) {
-          cell.classList.add("hit");
+      while (step <= 32) {
+        if (
+          noteIndex < pitchNotes.length &&
+          pitchNotes[noteIndex].start === step
+        ) {
+          const currentNote = pitchNotes[noteIndex];
+          const duration = currentNote.end - currentNote.start;
+
+          // Ensure duration doesn't exceed table bounds
+          const effectiveDuration = Math.min(duration, 32 - step + 1);
+
+          // Create a cell with colspan equal to duration
+          const cell = document.createElement("td");
+          cell.style.border = "1px solid black";
+          cell.style.backgroundColor = "#FFD700"; // Optional: Highlight the cell
           cell.textContent = "•";
-        }
+          cell.colSpan = effectiveDuration;
 
-        row.appendChild(cell);
+          // Add the 'hit' class for styling
+          cell.classList.add("hit");
+
+          row.appendChild(cell);
+
+          // Move the step counter forward by the duration
+          step += effectiveDuration;
+
+          // Move to the next note
+          noteIndex++;
+        } else {
+          // No note starting at this step, create an empty cell
+          const cell = document.createElement("td");
+          cell.style.border = "1px solid black";
+          row.appendChild(cell);
+          step++;
+        }
       }
 
       tbody.appendChild(row);
@@ -119,3 +146,17 @@ function renderAllVisualizations() {
   renderTrackVisualization("melody");
   // Add more if you have them (e.g. "callResponse")
 }
+
+// Ensure renderAllVisualizations is called after generating tracks
+// For example, in your main.js or wherever you handle track generation,
+// call renderAllVisualizations() after updating generationState.tracks
+
+// Example:
+// function regenerateTracks() {
+//   // ... your existing track generation logic ...
+//   generationState.tracks.melody = generateMelody(generationState);
+//   generationState.tracks.bass = regenerateBassLine();
+//   generationState.tracks.chords = generateChords(generationState);
+//   // ... other tracks ...
+//   renderAllVisualizations(); // Ensure this is called here
+// }
