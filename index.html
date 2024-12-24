@@ -73,6 +73,10 @@
         min-width: 150px; /* Reduced from 250px to 150px */
       }
 
+      .controls td {
+        padding-top: 20px;
+      }
+
       /* Adjusted .sequence to accommodate the change */
       .sequence {
         flex: 2.5; /* Increased from 2 to 2.5 to take up more space */
@@ -163,6 +167,14 @@
         width: 75px; /* Fixed width for the "Note" or "Hit Type" column */
         text-align: left; /* Optional: Align text to the left for better readability */
       }
+
+      label {
+        font-size: 14pt;
+      }
+
+      select {
+        font-size: 14pt;
+      }
     </style>
   </head>
   <body>
@@ -204,7 +216,9 @@
             <option value="B">B</option>
           </select>
 
-          <label for="scale-select">Scale:</label>
+          <div style="padding-top: 20px">
+            <label for="scale-select">Scale:</label>
+          </div>
           <select id="scale-select" class="input-dropdown knob">
             <option value="major">Major</option>
             <option value="minor">Minor</option>
@@ -884,7 +898,7 @@
               <td>
                 <label for="melody-response-delay">Response Delay:</label>
               </td>
-              <td>
+              <td style="padding-top: 20px">
                 <input
                   type="range"
                   id="melody-response-delay"
@@ -895,12 +909,12 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td style="padding-top: 20px">
                 <label for="melody-response-complexity"
                   >Response Complexity:</label
                 >
               </td>
-              <td>
+              <td style="padding-top: 20px">
                 <input
                   type="range"
                   id="melody-response-complexity"
@@ -911,10 +925,10 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td style="padding-top: 20px">
                 <label for="melody-call-balance">Call-Response Balance:</label>
               </td>
-              <td>
+              <td style="padding-top: 20px">
                 <input
                   type="range"
                   id="melody-call-balance"
@@ -925,10 +939,10 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td style="padding-top: 20px">
                 <label for="melody-response-register">Response Register:</label>
               </td>
-              <td>
+              <td style="padding-top: 20px">
                 <select
                   id="melody-response-register"
                   class="input-dropdown knob"
