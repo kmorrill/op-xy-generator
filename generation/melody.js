@@ -1,3 +1,5 @@
+// melody.js
+
 // Constants for melody generation
 const MELODY_CHANNEL = 4;
 const MIN_VELOCITY = 60;
@@ -19,6 +21,52 @@ const REGISTER_RANGES = {
   medium: { min: 60, max: 72 }, // C3 to C4
   high: { min: 72, max: 84 }, // C4 to C5
 };
+
+// Helper function for weighted random selection
+function weightedRandomSelection(items, weights) {
+  const cumulativeWeights = [];
+  weights.reduce((acc, weight, index) => {
+    cumulativeWeights[index] = acc + weight;
+    return cumulativeWeights[index];
+  }, 0);
+
+  const random =
+    Math.random() * cumulativeWeights[cumulativeWeights.length - 1];
+
+  for (let i = 0; i < cumulativeWeights.length; i++) {
+    if (random < cumulativeWeights[i]) {
+      return items[i];
+    }
+  }
+
+  return items[items.length - 1];
+}
+
+// Helper function to convert MIDI note numbers to note names
+function midiNoteToName(noteNumber) {
+  const noteNames = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
+  // Calculate the octave
+  const octave = Math.floor(noteNumber / 12) - 1;
+  // Index into noteNames
+  const noteIndex = noteNumber % 12;
+  const noteName = noteNames[noteIndex];
+
+  return `${noteName}${octave}`;
+}
 
 function generateMelody(params) {
   const {
@@ -58,6 +106,9 @@ function generateMelody(params) {
       // Add the note if valid
       if (note) {
         notes.push(note);
+        // Skip steps based on duration to prevent overlapping notes
+        currentStep += note.end - note.start;
+        continue;
       }
     }
     currentStep++;
@@ -160,7 +211,7 @@ function calculateNotePitch({
 
   while (note <= registerRange.max) {
     const noteInScale = scalePattern.some(
-      (interval) => (note - baseNote) % 12 === interval
+      (interval) => (((note - baseNote) % 12) + 12) % 12 === interval
     );
     if (noteInScale) {
       availableNotes.push(note);
@@ -168,43 +219,54 @@ function calculateNotePitch({
     note++;
   }
 
-  // Apply melodic contour influence
-  const contourIndex = Math.floor(
-    (melodicContour / 100) * (availableNotes.length - 1)
-  );
+  if (availableNotes.length === 0) {
+    console.warn("No available notes in the current register and scale.");
+    return baseNote; // Fallback to baseNote
+  }
 
-  // Higher contour values prefer higher notes
-  const preferredNote = availableNotes[contourIndex];
+  // Calculate weights based on melodicContour
+  const contourPosition = (melodicContour / 100) * (availableNotes.length - 1);
+  const weights = availableNotes.map((note, index) => {
+    const distance = Math.abs(index - contourPosition);
+    // Invert distance so that closer notes have higher weight
+    const weight = 1 / (distance + 1); // +1 to prevent division by zero
+    return weight;
+  });
+
+  // Select a note based on weights
+  const selectedNote = weightedRandomSelection(availableNotes, weights);
 
   // Apply harmony alignment
   const harmonicNote = findHarmonicNote(
-    preferredNote,
+    selectedNote,
     currentChords,
     currentStep,
     harmonyAlignment
   );
 
-  return harmonicNote || preferredNote;
+  return harmonicNote || selectedNote;
 }
 
-function findHarmonicNote(
-  preferredNote,
-  currentChords,
-  step,
-  harmonyAlignment
-) {
-  // Simplified harmony logic - could be expanded
+function findHarmonicNote(selectedNote, currentChords, step, harmonyAlignment) {
   if (currentChords && currentChords.length > 0) {
     const currentChord = currentChords[step % currentChords.length];
     if (currentChord && harmonyAlignment > 50) {
-      // Adjust note to nearest chord tone
       const chordTones = currentChord.notes || [];
       if (chordTones.length > 0) {
-        return findNearestNote(preferredNote, chordTones);
+        // Determine probability to stick to chord tone based on harmonyAlignment
+        const stickToChordProb = harmonyAlignment / 100;
+
+        if (Math.random() < stickToChordProb) {
+          // Stick to chord tone
+          return findNearestNote(selectedNote, chordTones);
+        } else {
+          // Deviate from chord tone by selecting another available note
+          return selectedNote;
+        }
       }
     }
   }
-  return preferredNote;
+  return selectedNote;
 }
 
 function findNearestNote(target, possibleNotes) {
