@@ -81,24 +81,6 @@ function renderTrackVisualization(trackName) {
         console.warn(`Row for drum type "${drumType}" not found.`);
         return;
       }
-
-      // Calculate the step index (1-based to 0-based)
-      const stepIndex = start - 1;
-
-      if (stepIndex < 0 || stepIndex >= 32) {
-        console.warn(`Invalid step index: ${start}`);
-        return;
-      }
-
-      // Highlight the corresponding cell
-      const cell = row.cells[stepIndex + 1]; // +1 to account for the first cell (drum name)
-      if (cell) {
-        cell.classList.add("hit");
-      } else {
-        console.warn(
-          `Cell not found for step ${start} in drum type "${drumType}".`
-        );
-      }
     });
 
     return;
