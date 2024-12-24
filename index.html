@@ -152,7 +152,7 @@
         <section id="genre-selection" class="config-section">
           <h2>Genre</h2>
           <label for="genre-select">Genre:</label>
-          <select id="genre-select" class="input-dropdown">
+          <select id="genre-select" class="input-dropdown knob">
             <option value="edm">Electronic/EDM</option>
             <option value="synthwave">Synthwave</option>
             <option value="hiphop">Hip Hop</option>
@@ -166,7 +166,7 @@
         <section id="key-scale-selection" class="config-section">
           <h2>Key and Scale</h2>
           <label for="key-select">Key:</label>
-          <select id="key-select" class="input-dropdown">
+          <select id="key-select" class="input-dropdown knob">
             <option value="C">C</option>
             <option value="D">D</option>
             <option value="E">E</option>
@@ -177,7 +177,7 @@
           </select>
 
           <label for="scale-select">Scale:</label>
-          <select id="scale-select" class="input-dropdown">
+          <select id="scale-select" class="input-dropdown knob">
             <option value="major">Major</option>
             <option value="minor">Minor</option>
             <option value="dorian">Dorian</option>
@@ -606,7 +606,11 @@
               <tr>
                 <td><label for="chord-drones">Root Note Drone:</label></td>
                 <td>
-                  <input type="checkbox" id="chord-drones" class="checkbox" />
+                  <input
+                    type="checkbox"
+                    id="chord-drones"
+                    class="checkbox knob"
+                  />
                 </td>
               </tr>
               <tr>
@@ -619,7 +623,7 @@
                   <input
                     type="checkbox"
                     id="chord-extensions"
-                    class="checkbox"
+                    class="checkbox knob"
                   />
                 </td>
               </tr>
@@ -901,7 +905,10 @@
                 <label for="melody-response-register">Response Register:</label>
               </td>
               <td>
-                <select id="melody-response-register" class="input-dropdown">
+                <select
+                  id="melody-response-register"
+                  class="input-dropdown knob"
+                >
                   <option value="same">Same</option>
                   <option value="higher">Higher</option>
                   <option value="lower">Lower</option>
