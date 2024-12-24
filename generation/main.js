@@ -38,6 +38,7 @@ function regenerateTracks() {
 
   generationState.tracks.bass = regenerateBassLine();
   generationState.tracks.chords = generateChords(generationState);
+  generationState.tracks.melody = generateMelody(generationState);
 
   console.log("Generated drum pattern:", generationState.tracks.drums);
   console.log("Generated bass line:", generationState.tracks.bass);

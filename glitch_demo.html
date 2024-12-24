@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glitch Effect Demo</title>
+    <script>
+      let midiAccess;
+      let midiOutput;
+
+      // Initialize Web MIDI
+      navigator.requestMIDIAccess().then((access) => {
+        midiAccess = access;
+        const outputs = Array.from(midiAccess.outputs.values());
+        if (outputs.length > 0) {
+          midiOutput = outputs[0];
+          console.log(`Using MIDI output: ${midiOutput.name}`);
+        } else {
+          console.error("No MIDI outputs available.");
+          alert("No MIDI outputs available.");
+        }
+      });
+
+      // Helper to send MIDI CC messages
+      function sendCC(cc, value, channel = 15) {
+        if (midiOutput) {
+          const status = 0xb0 | (channel - 1); // Control Change for specified channel
+          midiOutput.send([status, cc, value]);
+          console.log(
+            `MIDI CC Sent: CC ${cc}, Value ${value}, Channel ${channel}`
+          );
+        }
+      }
+
+      // Helper to send MIDI Note On and Off
+      function sendNote(note, velocity, duration, channel = 15) {
+        const noteOn = 0x90 | (channel - 1);
+        const noteOff = 0x80 | (channel - 1);
+
+        if (midiOutput) {
+          midiOutput.send([noteOn, note, velocity]);
+          console.log(
+            `Note On: ${note}, Velocity: ${velocity}, Channel: ${channel}`
+          );
+
+          setTimeout(() => {
+            midiOutput.send([noteOff, note, 0]);
+            console.log(`Note Off: ${note}, Channel: ${channel}`);
+          }, duration);
+        }
+      }
+
+      // Start the Glitch Demo
+      function startGlitchDemo() {
+        const tempo = 120; // BPM
+        const beatDuration = (60 / tempo) * 1000; // ms per beat
+        const ccParams = [
+          { cc: 12, start: 0, end: 127 }, // Modulate Speed
+          { cc: 13, start: 64, end: 0 }, // Reverse
+          { cc: 14, start: 127, end: 0 }, // Pitch Shift
+          { cc: 15, start: 50, end: 127 }, // Tape Mod Depth
+        ];
+
+        // Schedule CC changes over 4 beats
+        ccParams.forEach(({ cc, start, end }, index) => {
+          const stepDuration = beatDuration / 4; // Divide beats into steps
+          const steps = 16; // Total modulation steps over 4 beats
+
+          for (let i = 0; i <= steps; i++) {
+            const value = Math.round(start + ((end - start) * i) / steps);
+            setTimeout(
+              () => sendCC(cc, value),
+              i * stepDuration + index * beatDuration
+            );
+          }
+        });
+
+        // Play a sequence of notes to demonstrate the effect
+        const noteSequence = [60, 62, 64, 67]; // MIDI notes (C4, D4, E4, G4)
+        noteSequence.forEach((note, i) => {
+          setTimeout(
+            () => sendNote(note, 100, beatDuration * 0.8, 12),
+            i * beatDuration
+          );
+        });
+
+        console.log("Glitch demo started!");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Glitch Effect Demo</h1>
+    <p>
+      Click the button below to trigger the glitch effect on the Tape track.
+    </p>
+    <button onclick="startGlitchDemo()">Trigger Glitch Effect</button>
+  </body>
+</html>

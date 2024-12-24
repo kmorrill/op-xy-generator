@@ -9,6 +9,7 @@
     <script src="generation/drum.js" defer></script>
     <script src="generation/bass.js" defer></script>
     <script src="generation/chords.js" defer></script>
+    <script src="generation/melody.js" defer></script>
     <script src="main.js" defer></script>
     <script src="midi.js" defer></script>
     <script src="visualization.js" defer></script>
@@ -244,7 +245,7 @@
                     <table class="sequence-table" style="border-collapse: collapse; width: 100%; text-align: center;">
                         <thead>
                             <tr>
-                                <th>Step</th>
+                                <th>Note</th>
                                 <th>1</th>
                                 <th>2</th>
                                 <th>3</th>
@@ -446,30 +447,59 @@
             </div>
 
             <!-- Melodies -->
-            <div id="melodies" class="track-section">
-                <h3>Melodies</h3>
-                <table>
-                    <tr>
-                        <td><label for="melody-contour">Melodic Contour:</label></td>
-                        <td><input type="range" id="melody-contour" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="melody-rhythm">Rhythm:</label></td>
-                        <td><input type="range" id="melody-rhythm" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="melody-register">Register:</label></td>
-                        <td><input type="range" id="melody-register" class="knob" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="melody-harmony">Harmony:</label></td>
-                        <td><input type="range" id="melody-harmony" class="knob" min="0" max="100"></td>
-                    </tr>
-                </table>
-            </div>
-        </section>
+<!-- Melodies -->
+    <div id="melodies" class="track-section" style="display: flex;">
+      <div class="controls" style="flex: 1;">
+        <h3>Melodies</h3>
+        <table>
+          <tr>
+            <td><label for="melody-contour">Melodic Contour:</label></td>
+            <td><input type="range" id="melody-contour" class="knob" min="0" max="100" /></td>
+          </tr>
+          <tr>
+            <td><label for="melody-rhythm">Rhythm:</label></td>
+            <td><input type="range" id="melody-rhythm" class="knob" min="0" max="100" /></td>
+          </tr>
+          <tr>
+            <td><label for="melody-register">Register:</label></td>
+            <td><input type="range" id="melody-register" class="knob" min="0" max="100" /></td>
+          </tr>
+          <tr>
+            <td><label for="melody-harmony">Harmony:</label></td>
+            <td><input type="range" id="melody-harmony" class="knob" min="0" max="100" /></td>
+          </tr>
+        </table>
+      </div>
+      <div class="sequence" style="flex: 2; padding-left: 20px;">
+        <h4>Melody Sequence</h4>
+        <table
+          class="sequence-table"
+          style="border-collapse: collapse; width: 100%; text-align: center;"
+        >
+          <thead>
+            <tr>
+              <th>Note</th>
+              <!-- Steps 1..32 -->
+              <th>1</th> <th>2</th> <th>3</th> <th>4</th>
+              <th>5</th> <th>6</th> <th>7</th> <th>8</th>
+              <th>9</th> <th>10</th> <th>11</th> <th>12</th>
+              <th>13</th> <th>14</th> <th>15</th> <th>16</th>
+              <th>17</th> <th>18</th> <th>19</th> <th>20</th>
+              <th>21</th> <th>22</th> <th>23</th> <th>24</th>
+              <th>25</th> <th>26</th> <th>27</th> <th>28</th>
+              <th>29</th> <th>30</th> <th>31</th> <th>32</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+
+
+
     <section id="melodic-call-response" class="config-section">
-            <h2>Melodic Call Response</h2>
+            <h4>Melodic Call Response</h4>
             <table>
                 <tr>
                     <td><label for="melody-response-delay">Response Delay:</label></td>

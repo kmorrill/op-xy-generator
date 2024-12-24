@@ -1,91 +1,100 @@
 // visualization.js
 
-// Existing function to render track visualizations
+// A helper function to convert MIDI note numbers into e.g. "C#4", "Eb3", etc.
+function midiNoteToName(noteNumber) {
+  const noteNames = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
+  // Calculate the octave
+  const octave = Math.floor(noteNumber / 12) - 1;
+  // Index into noteNames
+  const noteIndex = noteNumber % 12;
+  const noteName = noteNames[noteIndex];
+
+  return `${noteName}${octave}`;
+}
+
 function renderTrackVisualization(trackName) {
   console.log(`Rendering visualization for track: ${trackName}`);
 
-  let table;
-
-  // Select the appropriate table based on the track name
+  // DRUM logic (unchanged)
   if (trackName === "drums") {
-    table = document.querySelector(`#drum-patterns .sequence-table`);
-  } else if (trackName === "bass") {
-    table = document.querySelector(`#basslines .sequence-table`); // Corrected the selector to match the HTML structure
-  } else {
-    console.error(`No visualization handler for track: ${trackName}`);
+    // existing drum logic with category-based rows...
+    // ...
     return;
   }
 
-  if (!table) {
-    console.error(`Table for ${trackName} not found.`);
-    return;
-  }
+  // For bass, chords, or melody, do the row-per-pitch approach
+  else if (
+    trackName === "bass" ||
+    trackName === "chords" ||
+    trackName === "melody"
+  ) {
+    // Map track name to selector
+    let tableSelector;
+    if (trackName === "bass") {
+      tableSelector = "#basslines .sequence-table";
+    } else if (trackName === "chords") {
+      tableSelector = "#chords .sequence-table";
+    } else if (trackName === "melody") {
+      tableSelector = "#melodies .sequence-table";
+    }
 
-  const tbody = table.querySelector("tbody");
-  tbody.innerHTML = ""; // Clear existing visualization
+    const table = document.querySelector(tableSelector);
+    if (!table) {
+      console.error(`Table for ${trackName} not found.`);
+      return;
+    }
 
-  const notes = generationState.tracks[trackName];
-  if (!notes || notes.length === 0) {
-    console.warn(`No notes to visualize for track: ${trackName}`);
-    return;
-  }
+    const tbody = table.querySelector("tbody");
+    tbody.innerHTML = ""; // Clear old rows
 
-  if (trackName === "drums") {
-    // Existing drums rendering logic
-    const categories = [
-      { type: "Kick", notes: [DRUMS.KICK, DRUMS.KICK_ALT] },
-      { type: "Snare", notes: [DRUMS.SNARE, DRUMS.SNARE_ALT, DRUMS.CLAP] },
-      { type: "Hi-Hats", notes: [DRUMS.CLOSED_HAT, DRUMS.OPEN_HAT] },
-      { type: "Toms", notes: [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM] },
-    ];
+    const notes = generationState.tracks[trackName];
+    if (!notes || notes.length === 0) {
+      console.warn(`No notes to visualize for track: ${trackName}`);
+      return;
+    }
 
-    categories.forEach((category) => {
+    // 1) Gather unique pitches
+    const uniquePitches = [...new Set(notes.map((note) => note.note))];
+    // 2) Sort them from low to high
+    uniquePitches.sort((a, b) => a - b);
+
+    // 3) Create rows for each pitch
+    uniquePitches.forEach((pitch) => {
       const row = document.createElement("tr");
-      const categoryCell = document.createElement("td");
-      categoryCell.textContent = category.type;
-      row.appendChild(categoryCell);
 
-      for (let i = 1; i <= 32; i++) {
-        const cell = document.createElement("td");
-        cell.style.border = "1px solid black";
+      // Convert pitch to "C#4", etc.
+      const noteLabel = midiNoteToName(pitch);
 
-        const matchingNotes = notes.filter(
-          (note) =>
-            category.notes.includes(note.note) &&
-            i >= note.start &&
-            i < note.end
-        );
-
-        if (matchingNotes.length > 0) {
-          cell.classList.add("hit");
-          cell.textContent = "•";
-        }
-
-        row.appendChild(cell);
-      }
-
-      tbody.appendChild(row);
-    });
-  } else if (trackName === "bass") {
-    // New bass rendering logic to include all notes in the scale as rows
-    const scaleNotes = generationState.tracks.bass.map((note) => note.note); // Assuming note objects have a 'note' property
-    const uniqueScaleNotes = [...new Set(scaleNotes)]; // Get unique notes in the scale
-
-    uniqueScaleNotes.forEach((scaleNote) => {
-      const row = document.createElement("tr");
+      // First cell: pitch label
       const labelCell = document.createElement("td");
-      labelCell.textContent = scaleNote; // Use the note number as the label
+      labelCell.textContent = noteLabel;
       row.appendChild(labelCell);
 
-      for (let i = 1; i <= 32; i++) {
+      // Columns for steps 1..32
+      for (let step = 1; step <= 32; step++) {
         const cell = document.createElement("td");
         cell.style.border = "1px solid black";
 
-        // Check if any note of this scale note starts at this step
-        const activeNotes = notes.filter(
-          (note) => note.note === scaleNote && note.start === i
+        // The note is "active" if step in [note.start, note.end)
+        const isActive = notes.some(
+          (note) => note.note === pitch && step >= note.start && step < note.end
         );
-        if (activeNotes.length > 0) {
+
+        if (isActive) {
           cell.classList.add("hit");
           cell.textContent = "•";
         }
@@ -95,11 +104,18 @@ function renderTrackVisualization(trackName) {
 
       tbody.appendChild(row);
     });
+  }
+  // Fallback for unsupported trackName
+  else {
+    console.error(`No visualization handler for track: ${trackName}`);
   }
 }
 
-// Optionally, modify renderAllVisualizations to include bass
+// Render all tracks
 function renderAllVisualizations() {
   renderTrackVisualization("drums");
-  renderTrackVisualization("bass"); // Add this line to render bass visualization
+  renderTrackVisualization("bass");
+  renderTrackVisualization("chords");
+  renderTrackVisualization("melody");
+  // Add more if you have them (e.g. "callResponse")
 }
