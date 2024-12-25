@@ -218,11 +218,17 @@ function generateRhythmPattern(
   const motifLength = shiftedMotif.length;
   const repetitions = Math.floor(patternLength / motifLength);
 
-  // Insert motifs into the pattern
+  // Insert motifs into the pattern with added variability
   for (let i = 0; i < repetitions; i++) {
     const startIdx = i * motifLength;
     shiftedMotif.forEach((val, j) => {
-      if (val) pattern[startIdx + j] = 1;
+      if (val) {
+        // Introduce probability to skip or add additional notes
+        if (Math.random() > 0.2) {
+          // 80% chance to place the note
+          pattern[startIdx + j] = 1;
+        }
+      }
     });
   }
 
@@ -231,7 +237,7 @@ function generateRhythmPattern(
   if (remainingSteps > 0) {
     const startIdx = repetitions * motifLength;
     for (let j = 0; j < remainingSteps; j++) {
-      if (shiftedMotif[j]) {
+      if (shiftedMotif[j] && Math.random() > 0.2) {
         pattern[startIdx + j] = 1;
       }
     }
