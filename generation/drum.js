@@ -195,25 +195,29 @@ function calculateVelocity(step, variation) {
 
 function applyVariation(pattern, variation) {
   // Apply timing and velocity variations
-  const variedPattern = pattern.map((note) => {
-    // Apply timing variations
-    const timingOffset = Math.random() * variation * 0.5 - 0.25; // ±0.25 steps based on variation
+  let variedPattern = pattern.map((note) => {
+    let timingOffset = 0;
+
+    // If this note is *not* Kick or Snare, allow normal timing offset.
+    if (![DRUMS.KICK, DRUMS.SNARE].includes(note.note)) {
+      // Original logic was something like ±0.25 steps * variation
+      // So let's keep that for auxiliary instruments
+      timingOffset = Math.random() * variation * 0.5 - 0.25;
+    }
+
+    // Apply offset
     let newStart = note.start + timingOffset;
 
-    // Round to the nearest integer
+    // Round, clamp, etc.
     newStart = Math.round(newStart);
-
-    // Clamp newStart to be within 1 to 32
     newStart = Math.max(1, Math.min(newStart, 32));
 
-    // Set newEnd as newStart + 1, clamped to 32
-    let newEnd = newStart + 1;
-    newEnd = Math.min(newEnd, 32);
+    let newEnd = Math.min(newStart + 1, 32);
 
-    // Apply velocity variation
+    // Velocity changes (same as before or add your own logic)
     let newVelocity = note.velocity + (Math.random() * 20 - 10) * variation;
     newVelocity = Math.max(30, Math.min(newVelocity, 127));
-    newVelocity = Math.floor(newVelocity); // Ensure velocity is an integer
+    newVelocity = Math.floor(newVelocity);
 
     return {
       ...note,
@@ -224,26 +228,32 @@ function applyVariation(pattern, variation) {
   });
 
   // Add fills based on variation
+  variedPattern = addFills(variedPattern, variation);
+
+  return variedPattern;
+}
+
+function addFills(pattern, variation) {
   if (Math.random() < variation * 0.3) {
-    const fillStart = Math.floor(Math.random() * 24) + 4; // Ensures fills start between step 4 and 27
+    // Choose a fillStart in the last 4 steps, e.g. 29–32
+    const fillStart = Math.floor(Math.random() * 4) + 29; // 29–32
     const fillNotes = [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM];
 
     for (let i = 0; i < 4; i++) {
-      const currentStep = fillStart + i;
-      if (currentStep > 32) break; // Prevent exceeding the maximum step
+      let currentStep = fillStart + i;
+      if (currentStep > 32) break;
 
       if (Math.random() < 0.6) {
-        variedPattern.push({
+        pattern.push({
           note: fillNotes[Math.floor(Math.random() * fillNotes.length)],
-          velocity: 70 + Math.floor(Math.random() * 40), // Velocity between 70 and 109
+          velocity: 70 + Math.floor(Math.random() * 40),
           start: currentStep,
-          end: currentStep + 1,
+          end: Math.min(currentStep + 1, 32),
         });
       }
     }
   }
-
-  return variedPattern;
+  return pattern;
 }
 
 function applyRepetition(pattern, repetition, genre) {
