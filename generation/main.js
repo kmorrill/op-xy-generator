@@ -26,17 +26,8 @@ let generationState = {
 };
 
 function regenerateTracks() {
-  // Validate and clamp drum velocities
-  generationState.tracks.drums = generateDrumPattern().map((note) => {
-    let velocity = parseInt(note.velocity, 10);
-    velocity = clamp(isNaN(velocity) ? 100 : velocity, 1, 127);
-    return {
-      ...note,
-      velocity: velocity,
-    };
-  });
-
-  generationState.tracks.bass = regenerateBassLine();
+  generationState.tracks.drums = generateDrumPattern();
+  generationState.tracks.bass = generateBassLine();
   generationState.tracks.chords = generateChords(generationState);
   generationState.tracks.melody = generateMelody(generationState);
 

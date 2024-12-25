@@ -13,3 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMidiInputs();
   regenerateTracks();
 });
+
+// Example: Call renderAllVisualizations after generating tracks
+function regenerateTracks() {
+  generationState.tracks.drums = generateDrumPattern();
+  generationState.tracks.bass = generateBassLine();
+  generationState.tracks.chords = generateChords(generationState);
+  generationState.tracks.melody = generateMelody(generationState);
+  renderAllVisualizations();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  regenerateTracks();
+});

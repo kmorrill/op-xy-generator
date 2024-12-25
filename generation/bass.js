@@ -116,34 +116,35 @@ const SCALES = {
   lydian: [0, 2, 4, 6, 7, 9, 11],
 };
 
-function generateBassLine(params) {
-  const {
-    genre = "edm",
-    phraseEvolution = 40,
-    rhythmicComplexity = 70,
-    grooveTightness = 80,
-    bassMovement = 60,
-    key = "C",
-    scale = "major",
-    drumPattern = [],
-  } = params;
+function generateBassLine() {
+  const params = {
+    genre: document.getElementById("genre-select").value,
+    phraseEvolution: parseInt(document.getElementById("bass-phrase").value),
+    rhythmicComplexity: parseInt(document.getElementById("bass-rhythm").value),
+    grooveTightness: parseInt(document.getElementById("bass-groove").value),
+    bassMovement: parseInt(document.getElementById("bass-movement").value),
+    key: document.getElementById("key-select").value,
+    scale: document.getElementById("scale-select").value,
+    drumPattern: generationState.tracks.drums || [],
+  };
 
-  const template = BASS_GENRE_TEMPLATES[genre.toLowerCase()];
+  const genre = params.genre.toLowerCase();
+  const template = BASS_GENRE_TEMPLATES[genre];
   const notes = [];
   const patternLength = 32; // Total steps in pattern
 
   // Convert parameter values to normalized values (0-1)
-  const evolution = phraseEvolution / 100;
-  const complexity = rhythmicComplexity / 100;
-  const tightness = grooveTightness / 100;
-  const movement = bassMovement / 100;
+  const evolution = params.phraseEvolution / 100;
+  const complexity = params.rhythmicComplexity / 100;
+  const tightness = params.grooveTightness / 100;
+  const movement = params.bassMovement / 100;
 
   // Get root note based on key
-  const rootNote = MIDI_NOTES[`${key}2`];
+  const rootNote = MIDI_NOTES[`${params.key}2`];
 
   // Calculate rest probability dynamically
   const restProbability =
-    1 - (rhythmicComplexity * 0.7 + grooveTightness * 0.3);
+    1 - (params.rhythmicComplexity * 0.7 + params.grooveTightness * 0.3);
   // Adjust weights as needed
 
   // Calculate shift for motif variation based on phrase evolution
@@ -153,7 +154,7 @@ function generateBassLine(params) {
   const rhythmPattern = generateRhythmPattern(
     template,
     complexity,
-    drumPattern,
+    params.drumPattern,
     restProbability,
     shiftSteps
   );
@@ -161,7 +162,7 @@ function generateBassLine(params) {
   // Generate pitch sequence
   const pitchSequence = generatePitchSequence(
     rootNote,
-    SCALES[scale],
+    SCALES[params.scale],
     movement,
     evolution,
     patternLength
@@ -172,7 +173,7 @@ function generateBassLine(params) {
   for (let step = 0; step < patternLength; step++) {
     if (rhythmPattern[step]) {
       const noteLength = calculateNoteLength(template.noteLength, tightness);
-      const velocity = calculateVelocity(step, drumPattern, complexity);
+      const velocity = calculateVelocity(step, params.drumPattern, complexity);
 
       // Ensure monophony by not starting a new note before the last one ends
       const start = Math.max(step, lastNoteEnd);
@@ -345,28 +346,3 @@ function calculateVelocity(step, drumPattern, complexity) {
   // Ensure velocity stays within MIDI bounds
   return Math.max(1, Math.min(127, velocity));
 }
-
-// Function to handle parameter changes and regenerate bass line
-function regenerateBassLine() {
-  const params = {
-    genre: document.getElementById("genre-select").value,
-    phraseEvolution: parseInt(document.getElementById("bass-phrase").value),
-    rhythmicComplexity: parseInt(document.getElementById("bass-rhythm").value),
-    grooveTightness: parseInt(document.getElementById("bass-groove").value),
-    bassMovement: parseInt(document.getElementById("bass-movement").value),
-    key: document.getElementById("key-select").value,
-    scale: document.getElementById("scale-select").value,
-    drumPattern: generationState.tracks.drums || [],
-  };
-
-  const bassLine = generateBassLine(params);
-
-  // Update visualization if needed
-  if (typeof renderTrackVisualization === "function") {
-    renderTrackVisualization("bass");
-  }
-
-  return bassLine;
-}
-
-window.regenerateBassLine = regenerateBassLine;

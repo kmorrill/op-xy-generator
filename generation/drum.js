@@ -187,13 +187,15 @@ function preserveCoreBeats(pattern, preserveFactor = 0.7) {
 function calculateVelocity(step, variation) {
   const baseVelocity = step % 4 === 0 ? 100 : 80;
   const randomRange = 30 * variation;
-  const velocity = Math.min(
+  let velocity = Math.min(
     127,
     Math.max(
       30,
       Math.floor(baseVelocity + (Math.random() * randomRange - randomRange / 2))
     )
   );
+  // Ensure velocity is an integer between 1 and 100
+  velocity = Math.max(1, Math.min(100, velocity));
   return velocity;
 }
 
@@ -346,12 +348,20 @@ function generateDrumPattern() {
   pattern = extendPattern(pattern);
 
   // Update global state
-  generationState.tracks.drums = pattern;
+  const adjustedPattern = pattern.map((note) => {
+    let velocity = parseInt(note.velocity, 10);
+    velocity = isNaN(velocity) ? 100 : velocity;
+    velocity = Math.max(1, Math.min(100, velocity));
+    return {
+      ...note,
+      velocity: velocity,
+    };
+  });
 
   // Update visualization
   renderTrackVisualization("drums");
 
-  return pattern;
+  return adjustedPattern;
 }
 
 // Initial generation

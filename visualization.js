@@ -268,7 +268,7 @@ function renderAllVisualizations() {
 // Example: Call renderAllVisualizations after generating tracks
 function regenerateTracks() {
   generationState.tracks.drums = generateDrumPattern();
-  generationState.tracks.bass = regenerateBassLine();
+  generationState.tracks.bass = generateBassLine();
   generationState.tracks.chords = generateChords(generationState);
   generationState.tracks.melody = generateMelody(generationState);
   renderAllVisualizations();
