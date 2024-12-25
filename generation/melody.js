@@ -2,6 +2,7 @@
 
 // Constants for melody generation
 const MELODY_CHANNEL = 4;
+const RESPONSE_CHANNEL = 5;
 const MIN_VELOCITY = 60;
 const MAX_VELOCITY = 127;
 
@@ -76,30 +77,86 @@ function generateMelody() {
   const rhythmicComplexity = document.getElementById("melody-rhythm").value;
   const register = document.getElementById("melody-register").value;
   const harmonyAlignment = document.getElementById("melody-harmony").value;
-  const responseDelay = document.getElementById("melody-response-delay").value;
-  const responseComplexity = document.getElementById(
-    "melody-response-complexity"
-  ).value;
-  const callResponseBalance = document.getElementById(
-    "melody-call-balance"
-  ).value;
+  const responseDelay = parseInt(
+    document.getElementById("melody-response-delay").value
+  );
+  const responseComplexity = parseInt(
+    document.getElementById("melody-response-complexity").value
+  );
+  const callResponseBalance = parseInt(
+    document.getElementById("melody-call-balance").value
+  );
   const responseRegister = document.getElementById(
     "melody-response-register"
   ).value;
   const currentChords = [];
 
+  // Generate call and response sections
+  const callLength = Math.floor((32 * callResponseBalance) / 100);
+  const responseLength = 32 - callLength;
+
+  // Generate the call phrase
+  const callNotes = generatePhrase({
+    baseNote: getBaseNoteFromKey(key),
+    scalePattern: GENRE_SCALES[genre] || GENRE_SCALES.edm,
+    registerRange: calculateRegisterRange(register),
+    melodicContour,
+    harmonyAlignment,
+    rhythmicComplexity,
+    currentChords,
+    length: callLength,
+    startStep: 0,
+    channel: MELODY_CHANNEL,
+  });
+
+  // Calculate response parameters based on input
+  const responseRegisterRange = calculateRegisterRange(responseRegister);
+  const responseStart = callLength + (responseDelay / 100) * 4; // Max 4 steps delay
+
+  // Modify complexity for response based on responseComplexity parameter
+  const responseRhythmicComplexity = adjustResponseComplexity(
+    rhythmicComplexity,
+    responseComplexity
+  );
+
+  // Generate the response phrase
+  const responseNotes = generatePhrase({
+    baseNote: getBaseNoteFromKey(key),
+    scalePattern: GENRE_SCALES[genre] || GENRE_SCALES.edm,
+    registerRange: responseRegisterRange,
+    melodicContour: invertContour(melodicContour), // Invert the contour for contrast
+    harmonyAlignment,
+    rhythmicComplexity: responseRhythmicComplexity,
+    currentChords,
+    length: responseLength,
+    startStep: responseStart,
+    channel: RESPONSE_CHANNEL,
+    isResponse: true,
+    referenceNotes: callNotes, // Pass call notes for thematic reference
+  });
+
+  return [...callNotes, ...responseNotes];
+}
+
+function generatePhrase({
+  baseNote,
+  scalePattern,
+  registerRange,
+  melodicContour,
+  harmonyAlignment,
+  rhythmicComplexity,
+  currentChords,
+  length,
+  startStep,
+  channel,
+  isResponse = false,
+  referenceNotes = [],
+}) {
   const notes = [];
-  const steps = 32; // Total number of steps
-
-  // Calculate base parameters
-  const baseNote = getBaseNoteFromKey(key);
-  const scalePattern = GENRE_SCALES[genre] || GENRE_SCALES.edm;
-  const registerRange = calculateRegisterRange(register);
   const noteDensity = calculateNoteDensity(rhythmicComplexity);
+  let currentStep = startStep;
 
-  // Generate the melody sequence
-  let currentStep = 0;
-  while (currentStep < steps) {
+  while (currentStep < startStep + length) {
     if (shouldGenerateNote(currentStep, noteDensity)) {
       const note = generateMelodyNote({
         baseNote,
@@ -109,12 +166,16 @@ function generateMelody() {
         harmonyAlignment,
         currentStep,
         currentChords,
+        isResponse,
+        referenceNotes,
       });
 
-      // Add the note if valid
       if (note) {
-        notes.push(note);
-        // Skip steps based on duration to prevent overlapping notes
+        // Add channel information to the note
+        notes.push({
+          ...note,
+          channel,
+        });
         currentStep += note.end - note.start;
         continue;
       }
@@ -123,6 +184,18 @@ function generateMelody() {
   }
 
   return notes;
+}
+
+function adjustResponseComplexity(baseComplexity, responseComplexity) {
+  // responseComplexity 0-100: 0 = simpler, 50 = same, 100 = more complex
+  const factor = (responseComplexity - 50) / 50; // -1 to 1
+  let adjustedComplexity = baseComplexity * (1 + factor);
+  return Math.max(0, Math.min(100, adjustedComplexity));
+}
+
+function invertContour(contour) {
+  // Invert the melodic contour (0-100) for contrast
+  return 100 - contour;
 }
 
 function getBaseNoteFromKey(key) {
@@ -165,6 +238,8 @@ function generateMelodyNote({
   harmonyAlignment,
   currentStep,
   currentChords,
+  isResponse = false,
+  referenceNotes = [],
 }) {
   // Calculate note duration based on step position
   const duration = calculateNoteDuration(currentStep);
@@ -183,6 +258,8 @@ function generateMelodyNote({
     harmonyAlignment,
     currentChords,
     currentStep,
+    isResponse,
+    referenceNotes,
   });
 
   // Generate velocity with slight variation
@@ -212,6 +289,8 @@ function calculateNotePitch({
   harmonyAlignment,
   currentChords,
   currentStep,
+  isResponse,
+  referenceNotes,
 }) {
   // Get available notes in the current register
   const availableNotes = [];
@@ -234,12 +313,17 @@ function calculateNotePitch({
 
   // Calculate weights based on melodicContour
   const contourPosition = (melodicContour / 100) * (availableNotes.length - 1);
-  const weights = availableNotes.map((note, index) => {
+  let weights = availableNotes.map((note, index) => {
     const distance = Math.abs(index - contourPosition);
     // Invert distance so that closer notes have higher weight
     const weight = 1 / (distance + 1); // +1 to prevent division by zero
     return weight;
   });
+
+  // If this is a response, adjust weights to favor notes that relate to the call
+  if (isResponse && referenceNotes.length > 0) {
+    weights = adjustWeightsForResponse(availableNotes, weights, referenceNotes);
+  }
 
   // Select a note based on weights
   const selectedNote = weightedRandomSelection(availableNotes, weights);
@@ -253,6 +337,31 @@ function calculateNotePitch({
   );
 
   return harmonicNote || selectedNote;
+}
+
+function adjustWeightsForResponse(availableNotes, weights, referenceNotes) {
+  // Find the most recent call notes
+  const recentCallNotes = referenceNotes.slice(-3).map((n) => n.note);
+
+  return weights.map((weight, index) => {
+    const note = availableNotes[index];
+    let responseBonus = 1;
+
+    // Favor notes that form musical intervals with recent call notes
+    recentCallNotes.forEach((callNote) => {
+      const interval = Math.abs(note - callNote) % 12;
+      // Bonus for perfect intervals (unison, fourth, fifth, octave)
+      if ([0, 5, 7].includes(interval)) {
+        responseBonus *= 1.5;
+      }
+      // Bonus for thirds and sixths
+      else if ([3, 4, 8, 9].includes(interval)) {
+        responseBonus *= 1.3;
+      }
+    });
+
+    return weight * responseBonus;
+  });
 }
 
 function findHarmonicNote(selectedNote, currentChords, step, harmonyAlignment) {
