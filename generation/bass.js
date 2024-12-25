@@ -16,39 +16,91 @@ const MIDI_NOTES = {
   B3: 59,
 };
 
+// Define rhythmic motifs for different genres
+const RHYTHMIC_MOTIFS = {
+  edm: [
+    // Four-on-the-floor
+    [1, 0, 0, 0, 1, 0, 0, 0],
+    // Syncopated EDM motif
+    [1, 0, 1, 0, 0, 1, 0, 0],
+    // Rolling EDM motif
+    [1, 0, 0, 1, 0, 0, 1, 0],
+  ],
+  hiphop: [
+    // Standard hip-hop groove
+    [1, 0, 0, 1, 0, 1, 0, 0],
+    // Syncopated hip-hop motif
+    [1, 0, 1, 0, 1, 0, 0, 1],
+    // Triplet-based hip-hop motif
+    [1, 0, 1, 1, 0, 1, 0, 1],
+  ],
+  synthwave: [
+    // Classic synthwave motif
+    [1, 0, 0, 1, 1, 0, 0, 0],
+    // Melodic synthwave motif
+    [1, 1, 0, 0, 1, 0, 1, 0],
+    // Driving synthwave motif
+    [1, 0, 1, 0, 1, 0, 1, 0],
+  ],
+  ambient: [
+    // Sparse ambient motif
+    [1, 0, 0, 0, 0, 0, 0, 0],
+    // Minimalist ambient motif
+    [0, 0, 1, 0, 0, 0, 1, 0],
+    // Flowing ambient motif
+    [1, 0, 0, 1, 0, 0, 0, 1],
+  ],
+  house: [
+    // Classic house motif
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    // Bouncy house motif
+    [1, 0, 1, 1, 0, 1, 0, 1],
+    // Groovy house motif
+    [1, 1, 0, 1, 0, 1, 1, 0],
+  ],
+  experimental: [
+    // Complex experimental motif
+    [1, 1, 0, 1, 0, 0, 1, 1],
+    // Asymmetric experimental motif
+    [1, 0, 1, 1, 0, 1, 0, 1],
+    // Polyrhythmic experimental motif
+    [1, 0, 0, 1, 1, 0, 1, 0],
+  ],
+};
+
 const BASS_GENRE_TEMPLATES = {
   edm: {
-    basePattern: [1, 0, 0, 0, 1, 0, 0, 0], // Basic four-on-the-floor
+    motifs: RHYTHMIC_MOTIFS.edm,
     noteLength: 6, // Default note length in ticks
     octaveJumpProb: 0.3,
     defaultComplexity: 0.4,
   },
   synthwave: {
-    basePattern: [1, 0, 0, 1, 1, 0, 0, 0],
+    motifs: RHYTHMIC_MOTIFS.synthwave,
     noteLength: 12,
     octaveJumpProb: 0.2,
     defaultComplexity: 0.3,
   },
   hiphop: {
-    basePattern: [1, 0, 0, 1, 0, 1, 0, 0],
+    motifs: RHYTHMIC_MOTIFS.hiphop,
     noteLength: 6,
     octaveJumpProb: 0.15,
     defaultComplexity: 0.6,
   },
   ambient: {
-    basePattern: [1, 0, 0, 0, 0, 0, 0, 0],
+    motifs: RHYTHMIC_MOTIFS.ambient,
     noteLength: 24,
     octaveJumpProb: 0.1,
     defaultComplexity: 0.2,
   },
   house: {
-    basePattern: [1, 0, 1, 0, 1, 0, 1, 0],
+    motifs: RHYTHMIC_MOTIFS.house,
     noteLength: 6,
     octaveJumpProb: 0.25,
     defaultComplexity: 0.5,
   },
   experimental: {
-    basePattern: [1, 1, 0, 1, 0, 0, 1, 1],
+    motifs: RHYTHMIC_MOTIFS.experimental,
     noteLength: 3,
     octaveJumpProb: 0.4,
     defaultComplexity: 0.8,
@@ -89,11 +141,21 @@ function generateBassLine(params) {
   // Get root note based on key
   const rootNote = MIDI_NOTES[`${key}2`];
 
-  // Generate base rhythm pattern
+  // Calculate rest probability dynamically
+  const restProbability =
+    1 - (rhythmicComplexity * 0.7 + grooveTightness * 0.3);
+  // Adjust weights as needed
+
+  // Calculate shift for motif variation based on phrase evolution
+  const shiftSteps = Math.floor(evolution * template.motifs[0].length);
+
+  // Generate base rhythm pattern using motifs
   const rhythmPattern = generateRhythmPattern(
     template,
     complexity,
-    drumPattern
+    drumPattern,
+    restProbability,
+    shiftSteps
   );
 
   // Generate pitch sequence
@@ -130,22 +192,52 @@ function generateBassLine(params) {
   return notes;
 }
 
-function generateRhythmPattern(template, complexity, drumPattern) {
-  const pattern = new Array(32).fill(0);
+function generateRhythmPattern(
+  template,
+  complexity,
+  drumPattern,
+  restProbability = 0.1,
+  shift = 0
+) {
+  const patternLength = 32; // Total steps in pattern
+  const pattern = new Array(patternLength).fill(0);
   const kickSteps = drumPattern
     .filter(
       (event) => event.note === DRUMS.KICK || event.note === DRUMS.KICK_ALT
     )
     .map((event) => event.start);
 
-  // Start with template pattern
-  for (let i = 0; i < 32; i += 8) {
-    template.basePattern.forEach((val, j) => {
-      if (val) pattern[i + j] = 1;
+  // Select a random motif from the genre-specific motifs
+  const motifs = template.motifs;
+  const selectedMotif = motifs[Math.floor(Math.random() * motifs.length)];
+
+  // Apply shifting to motif if needed
+  const shiftedMotif = shiftPattern(selectedMotif, shift);
+
+  // Determine how many times the motif fits into the pattern
+  const motifLength = shiftedMotif.length;
+  const repetitions = Math.floor(patternLength / motifLength);
+
+  // Insert motifs into the pattern
+  for (let i = 0; i < repetitions; i++) {
+    const startIdx = i * motifLength;
+    shiftedMotif.forEach((val, j) => {
+      if (val) pattern[startIdx + j] = 1;
     });
   }
 
-  // Add complexity based on kicks
+  // Handle any remaining steps if patternLength is not a multiple of motifLength
+  const remainingSteps = patternLength % motifLength;
+  if (remainingSteps > 0) {
+    const startIdx = repetitions * motifLength;
+    for (let j = 0; j < remainingSteps; j++) {
+      if (shiftedMotif[j]) {
+        pattern[startIdx + j] = 1;
+      }
+    }
+  }
+
+  // Add complexity based on drum kicks
   kickSteps.forEach((step) => {
     if (Math.random() < complexity) {
       pattern[step] = 1;
@@ -153,13 +245,32 @@ function generateRhythmPattern(template, complexity, drumPattern) {
   });
 
   // Add additional notes based on complexity
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < patternLength; i++) {
     if (!pattern[i] && Math.random() < complexity * 0.3) {
       pattern[i] = 1;
     }
   }
 
+  // Introduce rests based on restProbability with constraints
+  for (let i = 0; i < patternLength; i++) {
+    if (pattern[i] === 1 && Math.random() < restProbability) {
+      // Constraint: Ensure not too many consecutive rests
+      if (!(pattern[i - 1] === 0 && pattern[i - 2] === 0)) {
+        pattern[i] = 0;
+      }
+    }
+  }
+
   return pattern;
+}
+
+function shiftPattern(motif, shiftSteps) {
+  const shifted = [];
+  const motifLength = motif.length;
+  for (let i = 0; i < motifLength; i++) {
+    shifted.push(motif[(i + shiftSteps) % motifLength]);
+  }
+  return shifted;
 }
 
 function generatePitchSequence(rootNote, scale, movement, evolution, length) {
@@ -213,6 +324,12 @@ function calculateVelocity(step, drumPattern, complexity) {
   // Reduce velocity for off-beat notes
   if (step % 8 !== 0) {
     velocity -= 20;
+  }
+
+  // Add accents based on complexity
+  if (Math.random() < complexity * 0.2) {
+    // 20% of the time, adjusted by complexity
+    velocity += 30; // Accent velocity
   }
 
   // Add slight random variation based on complexity
