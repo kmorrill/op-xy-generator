@@ -96,6 +96,13 @@ function generateBassLine(params) {
     drumPattern
   );
 
+  // Match up kick
+  const kickSteps = drumPattern
+    .filter(
+      (event) => event.note === DRUMS.KICK || event.note === DRUMS.KICK_ALT
+    )
+    .map((event) => event.start);
+
   // Generate pitch sequence
   const pitchSequence = generatePitchSequence(
     rootNote,
@@ -126,7 +133,9 @@ function generateBassLine(params) {
 function generateRhythmPattern(template, complexity, drumPattern) {
   const pattern = new Array(32).fill(0);
   const kickSteps = drumPattern
-    .filter((event) => event.note === DRUMS.KICK)
+    .filter(
+      (event) => event.note === DRUMS.KICK || event.note === DRUMS.KICK_ALT
+    )
     .map((event) => event.start);
 
   // Start with template pattern
