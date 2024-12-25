@@ -25,30 +25,41 @@ const CHORD_GENRE_TEMPLATES = {
     progressions: [
       [0, 5, 3, 4], // I-VI-IV-V
       [0, 4, 5, 3], // I-V-VI-IV
+      [0, 2, 4, 5], // I-III-V-IV
+      [0, 3, 4, 5], // I-IV-V
+      [0, 5, 4, 3], // I-VI-V-IV
     ],
     rhythmPatterns: [
       [1, 0, 0, 0, 1, 0, 0, 0], // Basic 4/4
       [1, 0, 1, 0, 1, 0, 1, 0], // Rhythmic stabs
+      [1, 1, 0, 1, 0, 1, 0, 1], // Dense
+      [1, 0, 1, 1, 0, 1, 0, 1], // Syncopated
     ],
   },
   synthwave: {
     progressions: [
       [0, 5, 2, 3], // I-VI-III-IV
       [0, 4, 2, 5], // I-V-III-VI
+      [0, 3, 2, 4], // I-IV-III-V
+      [0, 2, 3, 5], // I-III-IV-VI
     ],
     rhythmPatterns: [
       [1, 0, 0, 1, 0, 0, 1, 0], // Syncopated
       [1, 1, 0, 1, 1, 0, 1, 0], // Dense
+      [1, 0, 1, 0, 1, 1, 0, 1], // Complex
     ],
   },
   hiphop: {
     progressions: [
       [0, 3, 4, 3], // I-IV-V-IV
       [0, 5, 3, 4], // I-VI-IV-V
+      [0, 4, 3, 5], // I-V-IV-VI
+      [0, 2, 3, 4], // I-III-IV-V
     ],
     rhythmPatterns: [
       [1, 0, 1, 0, 0, 1, 0, 0], // Swung feel
       [1, 0, 0, 1, 0, 0, 1, 1], // Syncopated
+      [1, 1, 0, 1, 0, 1, 0, 1], // Dense
     ],
   },
 };
@@ -70,15 +81,15 @@ function generateChords() {
   const template =
     CHORD_GENRE_TEMPLATES[params.genre] || CHORD_GENRE_TEMPLATES.edm;
 
-  // Select progression based on variation
-  const progressionIndex =
-    Math.floor(params.variation / 50) % template.progressions.length;
-  const progression = template.progressions[progressionIndex];
-
-  // Select rhythm pattern based on rhythmicPlacement
-  const rhythmIndex =
-    Math.floor(params.rhythmicPlacement / 50) % template.rhythmPatterns.length;
-  const rhythmPattern = template.rhythmPatterns[rhythmIndex];
+  // Randomly select progression and rhythm pattern
+  const progression =
+    template.progressions[
+      Math.floor(Math.random() * template.progressions.length)
+    ];
+  const rhythmPattern =
+    template.rhythmPatterns[
+      Math.floor(Math.random() * template.rhythmPatterns.length)
+    ];
 
   // Generate notes for each chord in the progression
   progression.forEach((degreeIndex, index) => {
@@ -183,7 +194,25 @@ function getScaleNoteAtDegree(key, scale, degree) {
 }
 
 function getNoteNumber(noteName) {
-  const noteMap = { C: 60, D: 62, E: 64, F: 65, G: 67, A: 69, B: 71 };
+  const noteMap = {
+    C: 60,
+    "C#": 61,
+    Db: 61,
+    D: 62,
+    "D#": 63,
+    Eb: 63,
+    E: 64,
+    F: 65,
+    "F#": 66,
+    Gb: 66,
+    G: 67,
+    "G#": 68,
+    Ab: 68,
+    A: 69,
+    "A#": 70,
+    Bb: 70,
+    B: 71,
+  };
   return noteMap[noteName] || 60;
 }
 
