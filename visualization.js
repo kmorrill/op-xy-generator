@@ -26,8 +26,56 @@ function midiNoteToName(noteNumber) {
   return `${noteName}${octave}`;
 }
 
+// Helper function to get numerical value for note sorting
+function getNoteValue(midiNote) {
+  const octave = Math.floor(midiNote / 12) - 1;
+  const noteIndex = midiNote % 12;
+  // This gives each note a unique value that properly sorts them musically
+  // by combining octave and note position
+  return octave * 12 + ((noteIndex + 3) % 12);
+}
+
+// Function to calculate notes in the selected scale and mode
+function getScaleNotes(scale, key) {
+  const noteNames = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
+  const scales = {
+    major: [0, 2, 4, 5, 7, 9, 11], // Whole steps for major scale
+    minor: [0, 2, 3, 5, 7, 8, 10], // Whole steps for natural minor scale
+    // Add other scales here if needed
+  };
+
+  const keyIndex = noteNames.indexOf(key); // Find the key index
+  if (keyIndex === -1) {
+    console.error(`Invalid key: ${key}`);
+    return [];
+  }
+
+  const intervals = scales[scale];
+  if (!intervals) {
+    console.error(`Invalid scale: ${scale}`);
+    return [];
+  }
+
+  // Generate all notes in the selected scale
+  const scaleNotes = intervals.map((interval) => (keyIndex + interval) % 12);
+  return scaleNotes;
+}
+
 function renderTrackVisualization(trackName) {
-  // DRUM logic
   if (trackName === "drums") {
     const tableSelector = "#drum-patterns .sequence-table";
     const table = document.querySelector(tableSelector);
@@ -69,6 +117,7 @@ function renderTrackVisualization(trackName) {
         console.warn(`Unknown drum MIDI note: ${note}`);
         return;
       }
+      drumType = midiToDrumMap[note] || "Other";
 
       // Map drum types to table rows
       if (drumType === "KICK" || drumType === "KICK_ALT") {
@@ -90,17 +139,14 @@ function renderTrackVisualization(trackName) {
       );
 
       if (!row) {
-        console.warn(`Row for drum type "${drumType}" not found.`);
+        console.warn(`No row for drum type: ${drumType}`);
         return;
       }
 
-      // Update the table cell for the hit
       const cell = row.cells[start];
       if (cell) {
-        cell.innerHTML = "&bull;"; // Ensure &bull; is always present
-        cell.classList.add("hit"); // Ensure 'hit' class is always added
-      } else {
-        console.warn(`Cell for step ${start} not found.`);
+        cell.innerHTML = "•";
+        cell.classList.add("hit");
       }
     });
 
@@ -113,7 +159,11 @@ function renderTrackVisualization(trackName) {
     trackName === "chords" ||
     trackName === "melody"
   ) {
-    // Map track name to selector
+    const selectedScale = document.getElementById("scale-select").value;
+    const selectedKey = document.getElementById("key-select").value;
+
+    const scaleNotes = getScaleNotes(selectedScale, selectedKey);
+
     let tableSelector;
     if (trackName === "bass") {
       tableSelector = "#basslines .sequence-table";
@@ -138,63 +188,42 @@ function renderTrackVisualization(trackName) {
       return;
     }
 
-    // 1) Gather unique pitches
+    // Gather unique pitches and sort them using the new getNoteValue function
     const uniquePitches = [...new Set(notes.map((note) => note.note))];
-    // 2) Sort them from low to high
-    uniquePitches.sort((a, b) => a - b);
+    uniquePitches.sort((a, b) => getNoteValue(b) - getNoteValue(a)); // Sort by musical pitch
 
-    // 3) Create rows for each pitch
+    // After sorting, convert MIDI numbers to note names for row headers
     uniquePitches.forEach((pitch) => {
       const row = document.createElement("tr");
-
-      // Convert pitch to "C#4", etc.
       const noteLabel = midiNoteToName(pitch);
 
-      // First cell: pitch label
+      // Add row header
       const labelCell = document.createElement("td");
       labelCell.textContent = noteLabel;
       row.appendChild(labelCell);
 
-      // Get all notes for this pitch, sorted by start
-      const pitchNotes = notes
-        .filter((note) => note.note === pitch)
-        .sort((a, b) => a.start - b.start);
+      // Add cells for each step
+      let step = 0;
+      while (step < 32) {
+        const pitchNotes = notes.filter(
+          (note) => note.note === pitch && note.start === step
+        );
 
-      let step = 1; // Initialize step counter
-      let noteIndex = 0; // Initialize note index
-
-      while (step <= 32) {
-        if (
-          noteIndex < pitchNotes.length &&
-          pitchNotes[noteIndex].start === step
-        ) {
-          const currentNote = pitchNotes[noteIndex];
+        if (pitchNotes.length > 0) {
+          const currentNote = pitchNotes[0];
           const duration = currentNote.end - currentNote.start;
+          const effectiveDuration = Math.min(duration, 32 - step);
 
-          // Ensure duration doesn't exceed table bounds
-          const effectiveDuration = Math.min(duration, 32 - step + 1);
-
-          // Create a cell with colspan equal to duration
           const cell = document.createElement("td");
-          cell.style.border = "1px solid black";
-          cell.style.backgroundColor = "#FFD700"; // Optional: Highlight the cell
-          cell.textContent = "•";
           cell.colSpan = effectiveDuration;
-
-          // Add the 'hit' class for styling
+          cell.textContent = "•";
           cell.classList.add("hit");
-
+          cell.style.backgroundColor = "#FFD700";
           row.appendChild(cell);
 
-          // Move the step counter forward by the duration
           step += effectiveDuration;
-
-          // Move to the next note
-          noteIndex++;
         } else {
-          // No note starting at this step, create an empty cell
           const cell = document.createElement("td");
-          cell.style.border = "1px solid black";
           row.appendChild(cell);
           step++;
         }
@@ -202,9 +231,7 @@ function renderTrackVisualization(trackName) {
 
       tbody.appendChild(row);
     });
-  }
-  // Fallback for unsupported trackName
-  else {
+  } else {
     console.error(`No visualization handler for track: ${trackName}`);
   }
 }
@@ -215,25 +242,17 @@ function renderAllVisualizations() {
   renderTrackVisualization("bass");
   renderTrackVisualization("chords");
   renderTrackVisualization("melody");
-  // Add more if you have them (e.g., "callResponse")
 }
 
-// Ensure renderAllVisualizations is called after generating tracks
-// For example, in your main.js or wherever you handle track generation,
-// call renderAllVisualizations() after updating generationState.tracks
-
-// Example:
+// Example: Call renderAllVisualizations after generating tracks
 function regenerateTracks() {
-  // ... your existing track generation logic ...
   generationState.tracks.drums = generateDrumPattern();
   generationState.tracks.bass = regenerateBassLine();
   generationState.tracks.chords = generateChords(generationState);
   generationState.tracks.melody = generateMelody(generationState);
-  // ... other tracks ...
-  renderAllVisualizations(); // Ensure this is called here
+  renderAllVisualizations();
 }
 
-// Initial generation
 document.addEventListener("DOMContentLoaded", () => {
   regenerateTracks();
 });
