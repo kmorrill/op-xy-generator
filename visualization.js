@@ -30,8 +30,6 @@ function midiNoteToName(noteNumber) {
 function getNoteValue(midiNote) {
   const octave = Math.floor(midiNote / 12) - 1;
   const noteIndex = midiNote % 12;
-  // This gives each note a unique value that properly sorts them musically
-  // by combining octave and note position
   return octave * 12 + ((noteIndex + 3) % 12);
 }
 
@@ -55,10 +53,9 @@ function getScaleNotes(scale, key) {
   const scales = {
     major: [0, 2, 4, 5, 7, 9, 11], // Whole steps for major scale
     minor: [0, 2, 3, 5, 7, 8, 10], // Whole steps for natural minor scale
-    // Add other scales here if needed
   };
 
-  const keyIndex = noteNames.indexOf(key); // Find the key index
+  const keyIndex = noteNames.indexOf(key);
   if (keyIndex === -1) {
     console.error(`Invalid key: ${key}`);
     return [];
@@ -71,8 +68,25 @@ function getScaleNotes(scale, key) {
   }
 
   // Generate all notes in the selected scale
-  const scaleNotes = intervals.map((interval) => (keyIndex + interval) % 12);
-  return scaleNotes;
+  return intervals.map((interval) => (keyIndex + interval) % 12);
+}
+
+// New helper function to get all valid scale notes within a range
+function getAllScaleNotesInRange(minNote, maxNote, scaleNotes) {
+  const allNotes = [];
+  const minOctave = Math.floor(minNote / 12);
+  const maxOctave = Math.floor(maxNote / 12);
+
+  for (let octave = minOctave; octave <= maxOctave; octave++) {
+    scaleNotes.forEach((noteInScale) => {
+      const midiNote = octave * 12 + noteInScale;
+      if (midiNote >= minNote && midiNote <= maxNote) {
+        allNotes.push(midiNote);
+      }
+    });
+  }
+
+  return allNotes.sort((a, b) => getNoteValue(b) - getNoteValue(a));
 }
 
 function renderTrackVisualization(trackName) {
@@ -152,7 +166,6 @@ function renderTrackVisualization(trackName) {
 
     return;
   }
-
   // For bass, chords, or melody, do the row-per-pitch approach with duration handling
   else if (
     trackName === "bass" ||
@@ -161,7 +174,6 @@ function renderTrackVisualization(trackName) {
   ) {
     const selectedScale = document.getElementById("scale-select").value;
     const selectedKey = document.getElementById("key-select").value;
-
     const scaleNotes = getScaleNotes(selectedScale, selectedKey);
 
     let tableSelector;
@@ -188,18 +200,27 @@ function renderTrackVisualization(trackName) {
       return;
     }
 
-    // Gather unique pitches and sort them using the new getNoteValue function
-    const uniquePitches = [...new Set(notes.map((note) => note.note))];
-    uniquePitches.sort((a, b) => getNoteValue(b) - getNoteValue(a)); // Sort by musical pitch
+    // Find min and max MIDI notes from the track
+    const midiNotes = notes.map((note) => note.note);
+    const minNote = Math.min(...midiNotes);
+    const maxNote = Math.max(...midiNotes);
 
-    // After sorting, convert MIDI numbers to note names for row headers
-    uniquePitches.forEach((pitch) => {
+    // Get all valid scale notes within the range
+    const allScaleNotes = getAllScaleNotesInRange(minNote, maxNote, scaleNotes);
+
+    // Create rows for all scale notes in range
+    allScaleNotes.forEach((pitch) => {
       const row = document.createElement("tr");
       const noteLabel = midiNoteToName(pitch);
 
       // Add row header
       const labelCell = document.createElement("td");
       labelCell.textContent = noteLabel;
+      // Highlight notes that are in the current scale
+      const pitchClass = pitch % 12;
+      if (scaleNotes.includes(pitchClass)) {
+        labelCell.classList.add("in-scale");
+      }
       row.appendChild(labelCell);
 
       // Add cells for each step
