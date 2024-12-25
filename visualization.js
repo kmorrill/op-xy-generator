@@ -239,7 +239,21 @@ function renderTrackVisualization(trackName) {
           cell.colSpan = effectiveDuration;
           cell.textContent = "•";
           cell.classList.add("hit");
-          cell.style.backgroundColor = "#FFD700";
+
+          // Check if the note's channel is the standard channel for the track
+          const standardChannel = MIDI_CHANNELS[trackName];
+          if (
+            currentNote.channel !== undefined &&
+            currentNote.channel !== standardChannel
+          ) {
+            cell.style.backgroundColor = "#0000FF"; // Blue for non-standard channel
+            console.log(
+              `Found a non-standard channel: ${currentNote.channel} for track: ${trackName}`
+            );
+          } else {
+            cell.style.backgroundColor = "#FFFF00"; // Yellow for standard channel
+          }
+
           row.appendChild(cell);
 
           step += effectiveDuration;
