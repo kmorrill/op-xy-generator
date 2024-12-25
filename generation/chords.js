@@ -66,8 +66,6 @@ function generateChords() {
     scale: document.getElementById("scale-select").value,
   };
 
-  console.log("Chord Parameters:", params);
-
   const chordNotes = [];
   const template =
     CHORD_GENRE_TEMPLATES[params.genre] || CHORD_GENRE_TEMPLATES.edm;

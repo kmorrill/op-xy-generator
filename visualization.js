@@ -27,8 +27,6 @@ function midiNoteToName(noteNumber) {
 }
 
 function renderTrackVisualization(trackName) {
-  console.log(`Rendering visualization for track: ${trackName}`);
-
   // DRUM logic
   if (trackName === "drums") {
     const tableSelector = "#drum-patterns .sequence-table";
@@ -44,9 +42,12 @@ function renderTrackVisualization(trackName) {
       return;
     }
 
-    // Clear previous 'hit' classes
-    const hitCells = tbody.querySelectorAll("td.hit");
-    hitCells.forEach((cell) => cell.classList.remove("hit"));
+    // Clear previous 'hit' classes and innerHTML
+    let hitCells = tbody.querySelectorAll("td.hit");
+    hitCells.forEach((cell) => {
+      cell.classList.remove("hit");
+      cell.innerHTML = "";
+    });
 
     const drumHits = generationState.tracks.drums;
     if (!drumHits || drumHits.length === 0) {
@@ -63,10 +64,21 @@ function renderTrackVisualization(trackName) {
     // Iterate through each drum hit and update the table
     drumHits.forEach((hit) => {
       const { note, start } = hit;
-      const drumType = midiToDrumMap[note];
+      let drumType = midiToDrumMap[note];
       if (!drumType) {
         console.warn(`Unknown drum MIDI note: ${note}`);
         return;
+      }
+
+      // Map drum types to table rows
+      if (drumType === "KICK" || drumType === "KICK_ALT") {
+        drumType = "Kick";
+      } else if (drumType === "SNARE" || drumType === "SNARE_ALT") {
+        drumType = "Snare";
+      } else if (drumType.includes("HAT")) {
+        drumType = "Hi-hat";
+      } else {
+        drumType = "Other";
       }
 
       // Find the corresponding row in the table
@@ -80,6 +92,15 @@ function renderTrackVisualization(trackName) {
       if (!row) {
         console.warn(`Row for drum type "${drumType}" not found.`);
         return;
+      }
+
+      // Update the table cell for the hit
+      const cell = row.cells[start];
+      if (cell) {
+        cell.innerHTML = "&bull;"; // Ensure &bull; is always present
+        cell.classList.add("hit"); // Ensure 'hit' class is always added
+      } else {
+        console.warn(`Cell for step ${start} not found.`);
       }
     });
 
