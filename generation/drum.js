@@ -111,17 +111,13 @@ const GENRE_TEMPLATES = {
 };
 
 // Current state for drum generation
+if (!window.generationState) {
+  window.generationState = { tracks: {} };
+}
 generationState.tracks.drums = [];
 
-function generateDrumPattern() {
-  const genre = document.getElementById("genre-select").value;
-  const density = parseInt(document.getElementById("drum-density").value) / 100;
-  const variation =
-    parseInt(document.getElementById("drum-variation").value) / 100;
-  const balance = parseInt(document.getElementById("drum-balance").value) / 100;
-  const repetition =
-    parseInt(document.getElementById("drum-repetition").value) / 100;
-
+// 1) Function to build an initial pattern from the genre template
+function buildPatternFromTemplate(genre, density, balance) {
   const template = GENRE_TEMPLATES[genre];
   if (!template) return [];
 
@@ -131,12 +127,11 @@ function generateDrumPattern() {
   Object.entries(template.core).forEach(([note, config]) => {
     const { steps, probability } = config;
     const adjustedProb = probability * (1 - balance * 0.5) * density;
-
     steps.forEach((step) => {
       if (Math.random() < adjustedProb) {
         pattern.push({
           note: parseInt(note),
-          velocity: Math.floor(calculateVelocity(step, variation)),
+          velocity: Math.floor(calculateVelocity(step, 0)), // pass variation=0 here or similar
           start: step,
           end: step + 1,
         });
@@ -148,12 +143,11 @@ function generateDrumPattern() {
   Object.entries(template.auxiliary).forEach(([note, config]) => {
     const { steps, probability } = config;
     const adjustedProb = probability * balance * density;
-
     steps.forEach((step) => {
       if (Math.random() < adjustedProb) {
         pattern.push({
           note: parseInt(note),
-          velocity: Math.floor(calculateVelocity(step, variation)),
+          velocity: Math.floor(calculateVelocity(step, 0)),
           start: step,
           end: step + 1,
         });
@@ -161,28 +155,38 @@ function generateDrumPattern() {
     });
   });
 
-  // Apply variation effects
-  pattern = applyVariation(pattern, variation);
-
-  // Apply repetition
-  pattern = applyRepetition(pattern, repetition, genre);
-
-  // Extend pattern to 32 steps
-  pattern = extendPattern(pattern);
-
-  // Update global state
-  generationState.tracks.drums = pattern;
-
-  // Update visualization
-  renderTrackVisualization("drums");
-
   return pattern;
 }
 
+// 2) Function to preserve core beats
+function preserveCoreBeats(pattern, preserveFactor = 0.7) {
+  // Define "core" instruments you want to preserve across *all* genres
+  // (you could also branch this by genre if needed)
+  const coreInstruments = new Set([
+    DRUMS.KICK,
+    DRUMS.SNARE,
+    DRUMS.CLOSED_HAT,
+    // or add RIM, CLAP, etc. if you consider them "core"
+  ]);
+
+  return pattern.map((note) => {
+    if (coreInstruments.has(note.note)) {
+      // If we pass this random check, we skip removing or messing with it
+      // so these notes are less likely to be lost or heavily altered
+      if (Math.random() < preserveFactor) {
+        // Return the note as-is
+        return note;
+      }
+    }
+    // For notes not preserved, return as-is (they can still be changed later)
+    return note;
+  });
+}
+
+// 3) Calculate velocity
 function calculateVelocity(step, variation) {
   const baseVelocity = step % 4 === 0 ? 100 : 80;
   const randomRange = 30 * variation;
-  // Ensure velocity calculation does not result in NaN and return an integer
   const velocity = Math.min(
     127,
     Math.max(
@@ -193,28 +197,22 @@ function calculateVelocity(step, variation) {
   return velocity;
 }
 
+// 4) Apply variation (smaller/no offset for Kick/Snare, plus fills at end)
 function applyVariation(pattern, variation) {
-  // Apply timing and velocity variations
   let variedPattern = pattern.map((note) => {
     let timingOffset = 0;
 
-    // If this note is *not* Kick or Snare, allow normal timing offset.
+    // If NOT Kick or Snare, apply timing offset
     if (![DRUMS.KICK, DRUMS.SNARE].includes(note.note)) {
-      // Original logic was something like ±0.25 steps * variation
-      // So let's keep that for auxiliary instruments
       timingOffset = Math.random() * variation * 0.5 - 0.25;
+      // e.g. ±0.25 steps * variation
     }
-
-    // Apply offset
     let newStart = note.start + timingOffset;
-
-    // Round, clamp, etc.
     newStart = Math.round(newStart);
     newStart = Math.max(1, Math.min(newStart, 32));
-
     let newEnd = Math.min(newStart + 1, 32);
 
-    // Velocity changes (same as before or add your own logic)
+    // Apply velocity variation
     let newVelocity = note.velocity + (Math.random() * 20 - 10) * variation;
     newVelocity = Math.max(30, Math.min(newVelocity, 127));
     newVelocity = Math.floor(newVelocity);
@@ -227,26 +225,27 @@ function applyVariation(pattern, variation) {
     };
   });
 
-  // Add fills based on variation
-  variedPattern = addFills(variedPattern, variation);
-
+  // Now add fills primarily near the end
+  variedPattern = addFillsAtEnd(variedPattern, variation);
   return variedPattern;
 }
 
-function addFills(pattern, variation) {
+// 5) Add fills at the end (e.g., steps 29-32)
+function addFillsAtEnd(pattern, variation) {
+  // e.g. 30% chance of a fill if variation is 1.0
   if (Math.random() < variation * 0.3) {
-    // Choose a fillStart in the last 4 steps, e.g. 29–32
-    const fillStart = Math.floor(Math.random() * 4) + 29; // 29–32
+    // fillStart anywhere from 29 to 32
+    const fillStart = Math.floor(Math.random() * 4) + 29; // 29-32
     const fillNotes = [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM];
 
     for (let i = 0; i < 4; i++) {
-      let currentStep = fillStart + i;
+      const currentStep = fillStart + i;
       if (currentStep > 32) break;
 
       if (Math.random() < 0.6) {
         pattern.push({
           note: fillNotes[Math.floor(Math.random() * fillNotes.length)],
-          velocity: 70 + Math.floor(Math.random() * 40),
+          velocity: 70 + Math.floor(Math.random() * 40), // 70-109
           start: currentStep,
           end: Math.min(currentStep + 1, 32),
         });
@@ -256,14 +255,15 @@ function addFills(pattern, variation) {
   return pattern;
 }
 
+// 6) Apply repetition logic (unchanged from your original or lightly modified)
 function applyRepetition(pattern, repetition, genre) {
   if (repetition < 0.7) return pattern;
 
-  // For high repetition, modify sections of the pattern
+  // For high repetition, we remove sections and regenerate them
   const template = GENRE_TEMPLATES[genre];
   for (let i = 8; i < 32; i += 8) {
     if (Math.random() < repetition) {
-      // Remove existing notes in this section
+      // Remove existing notes in this 8-step section
       pattern = pattern.filter((note) => note.start < i || note.start >= i + 8);
 
       // Add new variations in this section
@@ -277,16 +277,18 @@ function applyRepetition(pattern, repetition, genre) {
   return pattern;
 }
 
+// 6.1) Generate a small snippet for a repeated section
 function generateSectionPattern(template, startStep) {
   const pattern = [];
   const instruments = { ...template.core, ...template.auxiliary };
 
   Object.entries(instruments).forEach(([note, config]) => {
-    const { probability } = config;
-    const steps = config.steps.map((step) => step + startStep);
+    const { probability, steps } = config;
+    // Shift the config steps by startStep
+    const shiftedSteps = steps.map((step) => step + startStep);
 
-    steps.forEach((step) => {
-      if (Math.random() < probability && step < startStep + 8) {
+    shiftedSteps.forEach((step) => {
+      if (step < startStep + 8 && Math.random() < probability) {
         pattern.push({
           note: parseInt(note),
           velocity: calculateVelocity(step, 0.5),
@@ -300,8 +302,8 @@ function generateSectionPattern(template, startStep) {
   return pattern;
 }
 
+// 7) Extend pattern to 32 steps by duplicating first half
 function extendPattern(pattern) {
-  // Create a second half of the pattern with variations
   const secondHalf = pattern
     .filter((note) => note.start <= 16)
     .map((note) => ({
@@ -315,6 +317,41 @@ function extendPattern(pattern) {
     }));
 
   return [...pattern, ...secondHalf];
+}
+
+// 8) The main generation function with preserveCoreBeats integrated
+function generateDrumPattern() {
+  const genre = document.getElementById("genre-select").value;
+  const density = parseInt(document.getElementById("drum-density").value) / 100;
+  const variation =
+    parseInt(document.getElementById("drum-variation").value) / 100;
+  const balance = parseInt(document.getElementById("drum-balance").value) / 100;
+  const repetition =
+    parseInt(document.getElementById("drum-repetition").value) / 100;
+
+  // (1) Build initial pattern from the template
+  let pattern = buildPatternFromTemplate(genre, density, balance);
+
+  // (2) Preserve a subset of core beats
+  pattern = preserveCoreBeats(pattern, 0.7);
+  // e.g. 70% chance of not messing with core instruments
+
+  // (3) Apply variation (with smaller/no offset for Kick/Snare)
+  pattern = applyVariation(pattern, variation);
+
+  // (4) Apply repetition logic
+  pattern = applyRepetition(pattern, repetition, genre);
+
+  // (5) Extend pattern to 32 steps
+  pattern = extendPattern(pattern);
+
+  // Update global state
+  generationState.tracks.drums = pattern;
+
+  // Update visualization
+  renderTrackVisualization("drums");
+
+  return pattern;
 }
 
 // Initial generation
