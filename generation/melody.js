@@ -68,17 +68,25 @@ function midiNoteToName(noteNumber) {
   return `${noteName}${octave}`;
 }
 
-function generateMelody(params) {
-  const {
-    genre = "edm",
-    key = "C",
-    scale = "major",
-    melodicContour = 50,
-    rhythmicComplexity = 50,
-    register = 50,
-    harmonyAlignment = 50,
-    currentChords = [],
-  } = params;
+function generateMelody() {
+  const genre = document.getElementById("genre-select").value;
+  const key = document.getElementById("key-select").value;
+  const scale = document.getElementById("scale-select").value;
+  const melodicContour = document.getElementById("melody-contour").value;
+  const rhythmicComplexity = document.getElementById("melody-rhythm").value;
+  const register = document.getElementById("melody-register").value;
+  const harmonyAlignment = document.getElementById("melody-harmony").value;
+  const responseDelay = document.getElementById("melody-response-delay").value;
+  const responseComplexity = document.getElementById(
+    "melody-response-complexity"
+  ).value;
+  const callResponseBalance = document.getElementById(
+    "melody-call-balance"
+  ).value;
+  const responseRegister = document.getElementById(
+    "melody-response-register"
+  ).value;
+  const currentChords = [];
 
   const notes = [];
   const steps = 32; // Total number of steps
