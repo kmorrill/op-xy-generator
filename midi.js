@@ -1,12 +1,8 @@
 function sendMidiNoteOn(channel, note, velocity, output) {
-  console.log(
-    `Sending MIDI Note On: Channel ${channel}, Note ${note}, Velocity ${velocity}`
-  );
   output.send([0x90 | (channel - 1), note, velocity]);
 }
 
 function sendMidiNoteOff(channel, note, output) {
-  console.log(`Sending MIDI Note Off: Channel ${channel}, Note ${note}`);
   output.send([0x80 | (channel - 1), note, 0]);
 }
 
@@ -35,22 +31,15 @@ function setupMidiInputs() {
 }
 
 function playGeneratedNotes(step) {
-  console.log(`Playing notes for step: ${step}`);
   Object.keys(generationState.tracks).forEach((trackName) => {
     const track = generationState.tracks[trackName];
     track.forEach((note) => {
+      const channel = note.channel || MIDI_CHANNELS[trackName];
       if (note.start === step) {
-        console.log(`Note ON: ${note.note} at velocity ${note.velocity}`);
-        sendMidiNoteOn(
-          MIDI_CHANNELS[trackName],
-          note.note,
-          note.velocity,
-          midiOutput
-        );
+        sendMidiNoteOn(channel, note.note, note.velocity, midiOutput);
       }
       if (note.end === step) {
-        console.log(`Note OFF: ${note.note}`);
-        sendMidiNoteOff(MIDI_CHANNELS[trackName], note.note, midiOutput);
+        sendMidiNoteOff(channel, note.note, midiOutput);
       }
     });
   });

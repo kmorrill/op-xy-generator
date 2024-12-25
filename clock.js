@@ -48,7 +48,6 @@ function handleClockTick() {
 
   if (clockTickCount % TICKS_PER_STEP === 0) {
     const currentStep = Math.floor(clockTickCount / TICKS_PER_STEP) % 32;
-    console.log(`Processing step: ${currentStep + 1}`);
     playGeneratedNotes(currentStep + 1); // Now correctly represents a step
 
     if (clockTickCount >= TICKS_PER_STEP * 32) {

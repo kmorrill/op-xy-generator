@@ -45,7 +45,6 @@
 
           setTimeout(() => {
             midiOutput.send([noteOff, note, 0]);
-            console.log(`Note Off: ${note}, Channel: ${channel}`);
           }, duration);
         }
       }

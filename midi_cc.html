@@ -47,7 +47,6 @@
         const noteOff = 0x80 | (channel - 1);
         if (midiOutput) {
           midiOutput.send([noteOff, note, 0]);
-          console.log(`Note Off: ${note}, Channel: ${channel}`);
         }
       }
 

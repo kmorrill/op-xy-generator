@@ -139,12 +139,16 @@ function generateChords() {
 
   // Add drone if enabled
   if (params.drones) {
-    const rootNote = getNoteNumber(params.key);
+    const rootNote = getScaleNoteAtDegree(
+      params.key,
+      CHORD_SCALES[params.scale],
+      0 // Always use the root note for drones
+    );
     chordNotes.push({
       note: rootNote,
       velocity: 64,
       start: 1,
-      end: 33, // Full pattern length
+      end: Infinity, // Play forever
       channel: DRONE_CHANNEL,
     });
   }
