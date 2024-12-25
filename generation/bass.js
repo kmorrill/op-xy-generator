@@ -67,10 +67,10 @@ const SCALES = {
 function generateBassLine(params) {
   const {
     genre = "edm",
-    phraseEvolution = 50,
-    rhythmicComplexity = 50,
-    grooveTightness = 50,
-    bassMovement = 50,
+    phraseEvolution = 40,
+    rhythmicComplexity = 70,
+    grooveTightness = 80,
+    bassMovement = 60,
     key = "C",
     scale = "major",
     drumPattern = [],
@@ -96,13 +96,6 @@ function generateBassLine(params) {
     drumPattern
   );
 
-  // Match up kick
-  const kickSteps = drumPattern
-    .filter(
-      (event) => event.note === DRUMS.KICK || event.note === DRUMS.KICK_ALT
-    )
-    .map((event) => event.start);
-
   // Generate pitch sequence
   const pitchSequence = generatePitchSequence(
     rootNote,
@@ -112,18 +105,25 @@ function generateBassLine(params) {
     patternLength
   );
 
-  // Create note events
+  // Create note events ensuring monophony
+  let lastNoteEnd = 0; // Keep track of the last note's end position
   for (let step = 0; step < patternLength; step++) {
     if (rhythmPattern[step]) {
       const noteLength = calculateNoteLength(template.noteLength, tightness);
       const velocity = calculateVelocity(step, drumPattern, complexity);
 
+      // Ensure monophony by not starting a new note before the last one ends
+      const start = Math.max(step, lastNoteEnd);
+      const end = Math.min(start + noteLength, patternLength);
+
       notes.push({
         note: pitchSequence[step],
         velocity,
-        start: step,
-        end: Math.min(step + noteLength, patternLength),
+        start,
+        end,
       });
+
+      lastNoteEnd = end; // Update last note's end position
     }
   }
 
