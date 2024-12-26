@@ -51,7 +51,7 @@ function generatePatch({
   const engines = [
     "Axis",
     "Dissolve",
-    "Eano",
+    "E-Piano",
     "HardSync",
     "Organ",
     "Prism",
@@ -75,7 +75,7 @@ function generatePatch({
   if (
     engine === "Axis" ||
     engine === "Dissolve" ||
-    engine === "Eano" ||
+    engine === "E-Piano" ||
     engine === "HardSync" ||
     engine === "Organ" ||
     engine === "Prism" ||
