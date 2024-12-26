@@ -93,7 +93,6 @@ function generatePatch({
   // ---------------------
   // 2) CHANNEL, VOLUME, PAN
   // ---------------------
-  const channel = Math.floor(Math.random() * 8) + 1;
   let volume = 80 + Math.floor(Math.random() * 48);
   if (patchType === "bass") volume = Math.max(volume - 15, 0);
   const pan = Math.floor(spatialWidth * 127);
@@ -228,16 +227,17 @@ function generatePatch({
 
     const startBeat = Math.floor(Math.random() * 4);
     const trackSelects = document.querySelectorAll('[id^="track"]');
+
     const selectedTrack = Array.from(trackSelects).find(
       (track) => track.value === engine
     );
     const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
-    const channel = trackNumber + 1; // save the channel number
+    channel_for_engine = trackNumber + 1; // save the channel number
     notes.push({
       pitch: randomPitch,
       start: startBeat,
       duration,
-      channel,
+      channel: channel_for_engine,
     });
   }
 
@@ -612,7 +612,7 @@ function generatePatch({
   // ---------------------
   return {
     engine,
-    channel,
+    channel: channel_for_engine,
     volume,
     pan,
     ampEnv: {
