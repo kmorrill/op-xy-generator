@@ -858,11 +858,28 @@
         }
 
         setParameter(parameterName, value) {
+          console.log(`Setting parameter "${parameterName}" to value ${value}`);
+
+          if (!parameterName) {
+            console.warn("Attempted to set parameter with undefined name");
+            return;
+          }
+
           // Update your in-memory parameter
           this.parameters[parameterName] = value;
 
           // Find the corresponding MIDI CC number
+          console.log(
+            `Looking up CC number for ${parameterName.toUpperCase()}: ${parameterName}`
+          );
           const ccNumber = MIDI_CCS[parameterName.toUpperCase()];
+
+          if (ccNumber === undefined) {
+            console.warn(
+              `No MIDI CC mapping found for parameter: ${parameterName}`
+            );
+            return;
+          }
 
           // Emit the parameterChange event, passing the info needed to send CC
           this.emit("parameterChange", {
@@ -900,6 +917,9 @@
               // Use the last active automation if multiple overlap
               const value =
                 activeAutomations[activeAutomations.length - 1].getValue(beat);
+              console.log(
+                `Automation on "${parameterName}" at beat ${beat}: ${value}`
+              );
               this.setParameter(parameterName, Math.round(value));
             }
           });
@@ -1273,7 +1293,22 @@
           // Set up automations
           if (patch.automations && patch.automations.length > 0) {
             patch.automations.forEach((autoData) => {
-              const [module, param] = autoData.target.split(".");
+              const splitTarget = autoData.target.split(".");
+              let param;
+
+              if (splitTarget.length > 1) {
+                // If target is in "module.param" format
+                param = splitTarget[1];
+              } else {
+                // If target is just the parameter name
+                param = splitTarget[0];
+              }
+
+              // Log the extracted param for debugging
+              console.log(
+                `Automation target: ${autoData.target}, Extracted param: ${param}`
+              );
+
               const automation = new Automation({
                 target: param,
                 startValue: autoData.startValue,
@@ -1316,6 +1351,36 @@
 
       opxy.initialize().then(() => {
         console.log("OPXY initialized and ready");
+      });
+
+      const validateMIDICCs = () => {
+        console.log("Current MIDI CC mappings:", MIDI_CCS);
+
+        // Check for any undefined mappings
+        Object.entries(PARAMETER_DEFINITIONS).forEach(([key, value]) => {
+          if (value.cc === undefined) {
+            console.warn(`Missing CC number for parameter: ${key}`);
+          }
+        });
+
+        // Log all available parameters
+        console.log(
+          "Available parameters:",
+          Object.keys(PARAMETER_DEFINITIONS)
+        );
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        validateMIDICCs();
+
+        // Log the initial state of all tracks
+        opxy.tracks.forEach((track, trackName) => {
+          console.log(`Track ${trackName} initial state:`, {
+            channel: track.channel,
+            parameters: track.parameters,
+            automations: Array.from(track.automations.entries()),
+          });
+        });
       });
     </script>
   </body>
