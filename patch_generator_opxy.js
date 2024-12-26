@@ -182,7 +182,16 @@ class Track extends EventEmitter {
 
   clearSequencesAndAutomations() {
     this.automations.clear();
+    this.removeSequencedNotes();
+  }
+
+  removeSequencedNotes() {
     this.patterns.forEach((pattern) => {
+      pattern.notes.forEach((note) => {
+        if (note.start <= this.currentBeat) {
+          this.sendNoteStop(note);
+        }
+      });
       pattern.notes = [];
     });
   }
@@ -304,6 +313,7 @@ class OPXY extends EventEmitter {
     if (this.isPlaying) {
       this.isPlaying = false;
       this.updateStatus("Stopped");
+      this.clearSequencesAndAutomations();
     }
   }
 
@@ -538,6 +548,9 @@ class OPXY extends EventEmitter {
           })
         );
       });
+
+      // Add the pattern to the patterns array
+      track.patterns.push(pattern);
 
       // Set as current pattern
       track.currentPattern = pattern;
