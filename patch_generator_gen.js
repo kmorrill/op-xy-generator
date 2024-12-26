@@ -71,6 +71,25 @@ function generatePatch({
     engine = engines[Math.floor(Math.random() * engines.length)];
   }
 
+  // Constrain the selected engine when random to one of the selects for synth to track mapps in @patch_generator.html
+  if (
+    engine === "Axis" ||
+    engine === "Dissolve" ||
+    engine === "Eano" ||
+    engine === "HardSync" ||
+    engine === "Organ" ||
+    engine === "Prism" ||
+    engine === "Simple" ||
+    engine === "Wavetable"
+  ) {
+    engine = engine;
+  } else {
+    console.warn(
+      `Invalid engine "${engine}", falling back to random selection`
+    );
+    engine = engines[Math.floor(Math.random() * engines.length)];
+  }
+
   // ---------------------
   // 2) CHANNEL, VOLUME, PAN
   // ---------------------
@@ -263,10 +282,10 @@ function generatePatch({
       "trackVolume",
       "trackMute",
       "trackPan",
-      "synth_param1",
-      "synth_param2",
-      "synth_param3",
-      "synth_param4",
+      "param1",
+      "param2",
+      "param3",
+      "param4",
       "ampAttack",
       "ampDecay",
       "ampSustain",
@@ -454,6 +473,43 @@ function generatePatch({
         };
       },
     },
+    {
+      type: "Lofi",
+      recommendedFor: ["bass", "fx", "lead"],
+      synergy: {
+        character: 0.5,
+      },
+      paramAssignment: (vars) => {
+        const { character, brightness } = vars;
+        return {
+          Rate: Math.floor(20 + character * 100),
+          Bits: Math.floor(character * 80 + Math.random() * 20),
+          Quality: Math.floor((1 - brightness) * 50 + character * 20),
+          Drift: Math.floor(brightness * 70),
+          recommendedWet: Math.floor(60 + character * 40 - brightness * 30),
+        };
+      },
+    },
+    {
+      type: "Phaser",
+      recommendedFor: ["pad", "lead", "fx"],
+      synergy: {
+        brightness: 0.4,
+        movement: 0.3,
+      },
+      paramAssignment: (vars) => {
+        const { brightness, movement, patchType } = vars;
+        let baseSize = patchType === "pad" ? 80 : 40;
+        let dry = Math.floor(50 + (brightness - 0.5) * 20 + Math.random() * 20);
+        dry = Math.max(0, Math.min(127, dry));
+        return {
+          Frequency: Math.floor(baseSize + movement * 40),
+          Depth: Math.floor(movement * 80),
+          Rate: Math.floor(30 + brightness * 70),
+          Feedback: Math.floor(dry),
+        };
+      },
+    },
   ];
 
   // Weight and select FX
@@ -510,6 +566,26 @@ function generatePatch({
       ...fxParams,
     };
   });
+
+  // Update the "About this patch" section in the HTML
+  const patchDetails = document.getElementById("patch-details-list");
+  patchDetails.innerHTML = "";
+  const engineDetail = document.createElement("li");
+  engineDetail.textContent = `Engine: ${engine}`;
+  patchDetails.appendChild(engineDetail);
+
+  const fxDetails = chosenFx.map((fx, index) => {
+    const detail = document.createElement("li");
+    detail.textContent = `FX${index + 1}: ${fx.type}`;
+    return detail;
+  });
+  fxDetails.forEach((detail) => patchDetails.appendChild(detail));
+
+  if (automations.length > 0) {
+    const automationDetail = document.createElement("li");
+    automationDetail.textContent = `Automated Parameter: ${automations[0].target}`;
+    patchDetails.appendChild(automationDetail);
+  }
 
   // ---------------------
   // 10) RETURN COMPLETE PATCH

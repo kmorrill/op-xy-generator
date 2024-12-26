@@ -30,12 +30,35 @@
         min-width: 40px;
         display: inline-block;
       }
+
+      #patch-details {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      #patch-details h2 {
+        margin-top: 0;
+      }
+
+      #patch-details ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      #patch-details ul li {
+        margin-bottom: 10px;
+      }
     </style>
     <script src="patch_generator_opxy.js" defer></script>
     <script src="patch_generator_gen.js" defer></script>
   </head>
   <body>
     <div id="status"></div>
+
+
 
     <table class="patch-controls">
       <tr>
@@ -170,36 +193,118 @@
       </tr>
     </table>
 
+    <table class="patch-controls"></table>
+      <tr>
+        <td>Synth on Track 1:</td>
+        <td>
+          <select id="track1Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 2:</td>
+        <td>
+          <select id="track2Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 3:</td>
+        <td>
+          <select id="track3Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 4:</td>
+        <td>
+          <select id="track4Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 5:</td>
+        <td>
+          <select id="track5Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 6:</td>
+        <td>
+          <select id="track6Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 7:</td>
+        <td>
+          <select id="track7Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>Synth on Track 8:</td>
+        <td>
+          <select id="track8Synth"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>FX1:</td>
+        <td>
+          <select id="fx1Select"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>FX2:</td>
+        <td>
+          <select id="fx2Select"></select>
+        </td>
+      </tr>
+    </table>
+
+    <button id="generateBtn">Generate Random Patch</button>
+
+    <div id="patch-details">
+      <h2>About This Patch</h2>
+      <ul id="patch-details-list"></ul>
+    </div>
+
     <script>
-      // Add to the HTML
-
       document.addEventListener("DOMContentLoaded", () => {
-        const generateButton = document.createElement("button");
-        generateButton.textContent = "Generate Random Patch";
-
-        document.body.appendChild(generateButton);
-
         // Create and initialize the OPXY instance
         const opxy = new OPXY();
 
-        generateButton.onclick = () => {
+        // Dynamically create option elements for track1Synth to track8Synth
+        const synthOptions = ["Axis", "Dissolve", "Eano", "HardSync", "Organ", "Prism", "Simple", "Wavetable"];
+        for (let i = 1; i <= 8; i++) {
+          const trackSelect = document.getElementById(`track${i}Synth`);
+          synthOptions.forEach((synth, index) => {
+            const option = document.createElement("option");
+            option.value = synth;
+            option.textContent = synth;
+            if (index === i - 1) {
+              option.selected = true;
+            }
+            trackSelect.appendChild(option);
+          });
+        }
+
+        const fxOptions = [
+          "Chorus",
+          "Delay",
+          "Distortion",
+          "Reverb"
+        ];
+        ["fx1Select", "fx2Select"].forEach((fxId) => {
+          const fxSelect = document.getElementById(fxId);
+          fxOptions.forEach((fx) => {
+            const option = document.createElement("option");
+            option.value = fx;
+            option.textContent = fx;
+            fxSelect.appendChild(option);
+          });
+        });
+
+        document.getElementById("generateBtn").onclick = () => {
           const getSliderValue = (id) =>
             document.getElementById(id).value / 100;
 
           // Turn off any currently running automations
-          opxy.tracks.forEach((track) => {
-            track.automations.forEach((automations, parameterName) => {
-              automations.forEach((automation) => {
-                automation.endValue = automation.startValue;
-                automation.duration = 0;
-              });
-            });
-            track.patterns.forEach((pattern) => {
-              pattern.notes.forEach((note) => {
-                note.velocity = 0; // Turn off playing sequences
-              });
-            });
-          });
+          opxy.clearSequencesAndAutomations();
 
           opxy.generateAndApplyPatch({
             patchType: document.getElementById("patchType").value,
@@ -210,24 +315,22 @@
             character: getSliderValue("character"),
             resonance: getSliderValue("resonance"),
             spatialWidth: getSliderValue("spatialWidth"),
+            track1Synth: document.getElementById("track1Synth").value,
+            track2Synth: document.getElementById("track2Synth").value,
+            track3Synth: document.getElementById("track3Synth").value,
+            track4Synth: document.getElementById("track4Synth").value,
+            track5Synth: document.getElementById("track5Synth").value,
+            track6Synth: document.getElementById("track6Synth").value,
+            track7Synth: document.getElementById("track7Synth").value,
+            track8Synth: document.getElementById("track8Synth").value,
+            fx1: document.getElementById("fx1Select").value,
+            fx2: document.getElementById("fx2Select").value,
           });
         };
 
         opxy.initialize().then(() => {
           console.log("OPXY initialized and ready");
         });
-
-        const validateMIDICCs = () => {
-          // Check for any undefined mappings
-          Object.entries(PARAMETER_DEFINITIONS).forEach(([key, value]) => {
-            if (value.cc === undefined) {
-              console.warn(`Missing CC number for parameter: ${key}`);
-            }
-          });
-        };
-
-        validateMIDICCs();
-
         // Log the initial state of all tracks
         opxy.tracks.forEach((track, trackName) => {
           console.log(`Track ${trackName} initial state:`, {
