@@ -227,7 +227,18 @@ function generatePatch({
     }
 
     const startBeat = Math.floor(Math.random() * 4);
-    notes.push({ pitch: randomPitch, start: startBeat, duration });
+    const trackSelects = document.querySelectorAll('[id^="track"]');
+    const selectedTrack = Array.from(trackSelects).find(
+      (track) => track.value === engine
+    );
+    const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
+    const channel = trackNumber + 1; // save the channel number
+    notes.push({
+      pitch: randomPitch,
+      start: startBeat,
+      duration,
+      channel,
+    });
   }
 
   // ---------------------
@@ -574,6 +585,15 @@ function generatePatch({
   engineDetail.textContent = `Engine: ${engine}`;
   patchDetails.appendChild(engineDetail);
 
+  const channelDetail = document.createElement("li");
+  const trackSelects = document.querySelectorAll('[id^="track"]');
+  const selectedTrack = Array.from(trackSelects).find(
+    (track) => track.value === engine
+  );
+  const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
+  const assignedChannel = trackNumber + 1; // save the channel number
+  channelDetail.textContent = `Channel: ${assignedChannel}`;
+  patchDetails.appendChild(channelDetail);
   const fxDetails = chosenFx.map((fx, index) => {
     const detail = document.createElement("li");
     detail.textContent = `FX${index + 1}: ${fx.type}`;
