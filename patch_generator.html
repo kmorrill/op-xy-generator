@@ -869,9 +869,6 @@
           this.parameters[parameterName] = value;
 
           // Find the corresponding MIDI CC number
-          console.log(
-            `Looking up CC number for ${parameterName.toUpperCase()}: ${parameterName}`
-          );
           const ccNumber = MIDI_CCS[parameterName.toUpperCase()];
 
           if (ccNumber === undefined) {
@@ -917,9 +914,6 @@
               // Use the last active automation if multiple overlap
               const value =
                 activeAutomations[activeAutomations.length - 1].getValue(beat);
-              console.log(
-                `Automation on "${parameterName}" at beat ${beat}: ${value}`
-              );
               this.setParameter(parameterName, Math.round(value));
             }
           });
@@ -979,9 +973,6 @@
         async initialize() {
           try {
             const access = await navigator.requestMIDIAccess();
-
-            console.log("MIDI Inputs:", Array.from(access.inputs.values()));
-            console.log("MIDI Outputs:", Array.from(access.outputs.values()));
 
             const outputs = Array.from(access.outputs.values());
             if (outputs.length > 0) {
@@ -1305,10 +1296,6 @@
               }
 
               // Log the extracted param for debugging
-              console.log(
-                `Automation target: ${autoData.target}, Extracted param: ${param}`
-              );
-
               const automation = new Automation({
                 target: param,
                 startValue: autoData.startValue,
@@ -1354,20 +1341,12 @@
       });
 
       const validateMIDICCs = () => {
-        console.log("Current MIDI CC mappings:", MIDI_CCS);
-
         // Check for any undefined mappings
         Object.entries(PARAMETER_DEFINITIONS).forEach(([key, value]) => {
           if (value.cc === undefined) {
             console.warn(`Missing CC number for parameter: ${key}`);
           }
         });
-
-        // Log all available parameters
-        console.log(
-          "Available parameters:",
-          Object.keys(PARAMETER_DEFINITIONS)
-        );
       };
 
       document.addEventListener("DOMContentLoaded", () => {
