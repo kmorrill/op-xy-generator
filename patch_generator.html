@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OP-XY MIDI Control</title>
+    <style>
+      .patch-controls {
+        margin: 20px 0;
+        border-collapse: collapse;
+      }
+
+      .patch-controls td {
+        padding: 8px;
+        vertical-align: middle;
+      }
+
+      .patch-controls td:first-child {
+        width: 120px;
+      }
+
+      .patch-controls input[type="range"] {
+        width: 200px;
+      }
+
+      .patch-controls select {
+        width: 200px;
+        padding: 4px;
+      }
+
+      .patch-controls span {
+        min-width: 40px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status"></div>
+
+    <table class="patch-controls">
+      <tr>
+        <td>Patch Type:</td>
+        <td colspan="2">
+          <select id="patchType">
+            <option value="lead">Lead</option>
+            <option value="bass">Bass</option>
+            <option value="pad">Pad</option>
+            <option value="pluck">Pluck</option>
+            <option value="fx">FX</option>
+          </select>
+        </td>
+        <td>
+          <span
+            >Defines the overall role of the sound, such as melodic leads,
+            basslines, atmospheric pads, sharp plucks, or sound effects.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Synth Engine:</td>
+        <td colspan="2">
+          <select id="engineType">
+            <option value="random">Random</option>
+            <option value="Axis">Axis</option>
+            <option value="Dissolve">Dissolve</option>
+            <option value="Eano">Eano</option>
+            <option value="HardSync">Hard Sync</option>
+            <option value="Organ">Organ</option>
+            <option value="Prism">Prism</option>
+            <option value="Simple">Simple</option>
+            <option value="Wavetable">Wavetable</option>
+          </select>
+        </td>
+        <td>
+          <span
+            >Determines the type of synthesizer engine to use, affecting the
+            timbre and characteristics of the sound.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Brightness:</td>
+        <td>
+          <input type="range" id="brightness" min="0" max="100" value="50" />
+        </td>
+        <td><span id="brightnessValue">0.5</span></td>
+        <td>
+          <span
+            >Controls the tonal brightness of the sound, ranging from dark and
+            muted to bright and sharp. A darker sound emphasizes lower
+            frequencies and can feel warm or subdued, while a brighter sound
+            emphasizes higher frequencies, creating clarity and sharpness.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Movement:</td>
+        <td>
+          <input type="range" id="movement" min="0" max="100" value="50" />
+        </td>
+        <td><span id="movementValue">0.5</span></td>
+        <td>
+          <span
+            >Adjusts the dynamic modulation of the sound, creating a sense of
+            motion or stability.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Complexity:</td>
+        <td>
+          <input type="range" id="complexity" min="0" max="100" value="50" />
+        </td>
+        <td><span id="complexityValue">0.5</span></td>
+        <td>
+          <span
+            >Determines the intricacy of the sound, influencing its layering and
+            harmonic depth. Higher complexity can introduce richer harmonics,
+            more active modulation, or additional notes, while lower complexity
+            keeps the sound simpler and cleaner.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Character:</td>
+        <td>
+          <input type="range" id="character" min="0" max="100" value="50" />
+        </td>
+        <td><span id="characterValue">0.5</span></td>
+        <td>
+          <span
+            >Defines the tonal personality of the sound, such as smooth, gritty,
+            or textured. higher character values might increase the amount of
+            grit in a bassline, add shimmering harmonics to a lead, or emphasize
+            modulated textures in a pad. Lower character values could smooth out
+            the sound, making it more neutral or clean. It also influences
+            secondary effects, like the intensity of modulation or the
+            responsiveness of filters and envelopes.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Resonance:</td>
+        <td>
+          <input type="range" id="resonance" min="0" max="100" value="50" />
+        </td>
+        <td><span id="resonanceValue">0.5</span></td>
+        <td>
+          <span
+            >Emphasizes frequencies around the filter cutoff point, affecting
+            the sharpness of the sound. High resonance can also create a
+            distinct ringing or whistling effect at the cutoff frequency, add a
+            sense of movement as the filter sweeps, and even push the filter
+            into self-oscillation for unique tonal effects.</span
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>Spatial Width:</td>
+        <td>
+          <input type="range" id="spatialWidth" min="0" max="100" value="50" />
+        </td>
+        <td><span id="spatialWidthValue">0.5</span></td>
+        <td>
+          <span
+            >Controls the stereo width of the sound, from mono to wide and
+            spacious.</span
+          >
+        </td>
+      </tr>
+    </table>
+
+    <script>
+      const PARAMETER_DEFINITIONS = {
+        trackVolume: { cc: 7, defaultValue: 64 },
+        trackMute: { cc: 9, defaultValue: 0 },
+        trackPan: { cc: 10, defaultValue: 64 },
+        param1: { cc: 12, defaultValue: 50 },
+        param2: { cc: 13, defaultValue: 50 },
+        param3: { cc: 14, defaultValue: 50 },
+        param4: { cc: 15, defaultValue: 50 },
+        ampAttack: { cc: 20, defaultValue: 64 },
+        ampDecay: { cc: 21, defaultValue: 64 },
+        ampSustain: { cc: 22, defaultValue: 64 },
+        ampRelease: { cc: 23, defaultValue: 64 },
+        filterAttack: { cc: 24, defaultValue: 64 },
+        filterDecay: { cc: 25, defaultValue: 64 },
+        filterSustain: { cc: 26, defaultValue: 64 },
+        filterRelease: { cc: 27, defaultValue: 64 },
+        filterCutoff: { cc: 32, defaultValue: 64 },
+        resonance: { cc: 33, defaultValue: 64 },
+        envAmount: { cc: 34, defaultValue: 64 },
+        keyTracking: { cc: 35, defaultValue: 64 },
+        sendToExt: { cc: 36, defaultValue: 0 },
+        sendToTape: { cc: 37, defaultValue: 0 },
+        sendToFX1: { cc: 38, defaultValue: 0 },
+        sendToFX2: { cc: 39, defaultValue: 0 },
+        lfoShape: { cc: 40, defaultValue: 0 },
+        lfoOnsetDest: { cc: 41, defaultValue: 0 },
+      };
+
+      const MIDI_CCS = Object.fromEntries(
+        Object.entries(PARAMETER_DEFINITIONS).map(([key, value]) => [
+          key.toUpperCase(),
+          value.cc,
+        ])
+      );
+
+      // Add this after your PARAMETER_DEFINITIONS and before the EventEmitter class
+
+      function generatePatch({
+        patchType = "lead",
+        brightness = 0.5,
+        movement = 0.5,
+        complexity = 0.5,
+        character = 0.5,
+        resonance = 0.5,
+        spatialWidth = 0.5,
+        engineSelection = "random",
+      }) {
+        // ---------------------
+        // 1) ENGINE CHOICE
+        // ---------------------
+        const engines = [
+          "Axis",
+          "Dissolve",
+          "Eano",
+          "HardSync",
+          "Organ",
+          "Prism",
+          "Simple",
+          "Wavetable",
+        ];
+
+        let engine;
+        if (engineSelection === "random") {
+          engine = engines[Math.floor(Math.random() * engines.length)];
+        } else if (engines.includes(engineSelection)) {
+          engine = engineSelection;
+        } else {
+          console.warn(
+            `Unknown engine "${engineSelection}", falling back to random selection`
+          );
+          engine = engines[Math.floor(Math.random() * engines.length)];
+        }
+
+        // ---------------------
+        // 2) CHANNEL, VOLUME, PAN
+        // ---------------------
+        const channel = Math.floor(Math.random() * 8) + 1;
+        let volume = 80 + Math.floor(Math.random() * 48);
+        if (patchType === "bass") volume = Math.max(volume - 15, 0);
+        const pan = Math.floor(spatialWidth * 127);
+
+        // ---------------------
+        // 3) AMP ENVELOPE
+        // ---------------------
+        let ampAttack, ampDecay, ampSustain, ampRelease;
+        switch (patchType) {
+          case "pad":
+            ampAttack = 20 + Math.floor(Math.random() * 40);
+            ampDecay = 30 + Math.floor(Math.random() * 30);
+            ampSustain = 80 + Math.floor(Math.random() * 20);
+            ampRelease = 40 + Math.floor(Math.random() * 40);
+            break;
+          case "bass":
+            ampAttack = Math.floor(Math.random() * 10);
+            ampDecay = 20 + Math.floor(Math.random() * 20);
+            ampSustain = 50 + Math.floor(Math.random() * 40);
+            ampRelease = 10 + Math.floor(Math.random() * 20);
+            break;
+          case "pluck":
+            ampAttack = Math.floor(Math.random() * 5);
+            ampDecay = 10 + Math.floor(Math.random() * 20);
+            ampSustain = 30 + Math.floor(Math.random() * 30);
+            ampRelease = 10 + Math.floor(Math.random() * 30);
+            break;
+          case "fx":
+            ampAttack = 5 + Math.floor(Math.random() * 30);
+            ampDecay = 5 + Math.floor(Math.random() * 30);
+            ampSustain = 10 + Math.floor(Math.random() * 30);
+            ampRelease = 10 + Math.floor(Math.random() * 60);
+            break;
+          default: // "lead" or other
+            ampAttack = Math.floor(Math.random() * 10);
+            ampDecay = 20 + Math.floor(Math.random() * 20);
+            ampSustain = 60 + Math.floor(Math.random() * 40);
+            ampRelease = 20 + Math.floor(Math.random() * 30);
+        }
+
+        // ---------------------
+        // 4) FILTER + FILTER ENVELOPE
+        // ---------------------
+        const filterCutoff = Math.floor(30 + brightness * 90);
+        const filterResonance = Math.floor(resonance * 60);
+        const envAmount = Math.floor(20 + complexity * 50);
+        const keyTracking = Math.floor(64 + (brightness - 0.5) * 30);
+
+        const filterAttack = Math.max(
+          0,
+          ampAttack - Math.floor(Math.random() * 10)
+        );
+        const filterDecay = ampDecay + Math.floor(Math.random() * 10);
+        const filterSustain = Math.max(
+          0,
+          ampSustain - Math.floor(Math.random() * 10)
+        );
+        const filterRelease = ampRelease + Math.floor(Math.random() * 20);
+
+        // ---------------------
+        // 5) ENGINE PARAMS
+        // ---------------------
+        // param1: "Grit/Texture"
+        const param1 = Math.floor(
+          character * 70 +
+            complexity * 30 +
+            (patchType === "fx" ? 20 : 0) +
+            Math.random() * 15
+        );
+
+        // param2: "Harmonic Brightness"
+        const param2 = Math.floor(
+          brightness * 80 +
+            complexity * 20 +
+            (patchType === "lead" ? 15 : 0) +
+            Math.random() * 10
+        );
+
+        // param3: "Movement/Mod Factor"
+        const param3 = Math.floor(
+          movement * 70 +
+            resonance * 40 +
+            (movement > 0.7 && spatialWidth > 0.5 ? 20 : 0) +
+            Math.random() * 10
+        );
+
+        // param4: "Stereo/Space"
+        const param4 = Math.floor(
+          spatialWidth * 80 +
+            brightness * 20 +
+            (patchType === "pad" ? 15 : 0) +
+            Math.random() * 15
+        );
+
+        // ---------------------
+        // 6) PATTERN
+        // ---------------------
+        const patternLength = 4;
+        const patternRes = 16;
+        const notes = [];
+        const noteCount = complexity > 0.7 ? 4 : 2;
+
+        for (let i = 0; i < noteCount; i++) {
+          const pitches = [
+            "C3",
+            "D3",
+            "E3",
+            "G3",
+            "B3",
+            "C4",
+            "D4",
+            "E4",
+            "G4",
+            "A4",
+            "B4",
+            "C5",
+          ];
+          const randomPitch =
+            pitches[Math.floor(Math.random() * pitches.length)];
+
+          // Adjust note duration based on patch type
+          let duration;
+          switch (patchType) {
+            case "pad":
+              duration = 2 + Math.random() * 2;
+              break;
+            case "pluck":
+              duration = 0.25 + Math.random() * 0.25;
+              break;
+            case "bass":
+              duration = 0.5 + Math.random() * 0.5;
+              break;
+            default:
+              duration = 0.5 + Math.random();
+          }
+
+          const startBeat = Math.floor(Math.random() * 4);
+          notes.push({ pitch: randomPitch, start: startBeat, duration });
+        }
+
+        // ---------------------
+        // 7) LFO SETTINGS
+        // ---------------------
+        const lfoTypes = ["element", "random", "tremolo", "value"];
+        let lfoType;
+
+        // Weight LFO type selection based on patch characteristics
+        if (patchType === "pad" || movement > 0.7) {
+          lfoType = Math.random() > 0.5 ? "element" : "random";
+        } else if (patchType === "bass" || patchType === "lead") {
+          lfoType = "tremolo";
+        } else if (complexity > 0.6) {
+          lfoType = "value";
+        } else {
+          lfoType = lfoTypes[Math.floor(Math.random() * lfoTypes.length)];
+        }
+
+        let lfo = { type: lfoType };
+        switch (lfoType) {
+          case "element":
+            lfo.source = ["gyroscope", "microphone", "amp envelope", "sum"][
+              Math.floor(Math.random() * 4)
+            ];
+            lfo.rate = Math.floor(movement * 127);
+            lfo.amount = Math.floor(character * 127);
+            break;
+          case "random":
+            lfo.speed = Math.floor(movement * 127);
+            lfo.amount = Math.floor(complexity * 127);
+            lfo.envelope = Math.floor((1 - movement) * 127);
+            break;
+          case "tremolo":
+            lfo.speed = Math.floor(movement * 127);
+            lfo.amount = Math.floor(character * 127);
+            lfo.shape = Math.random() > 0.5 ? "sine" : "triangle";
+            break;
+          case "value":
+            lfo.speed = Math.floor(movement * 127);
+            lfo.amount = Math.floor(complexity * 127);
+            break;
+        }
+
+        // ---------------------
+        // 8) AUTOMATION
+        // ---------------------
+        const automations = [];
+        {
+          // All possible targets we can automate
+          const possibleTargets = [
+            "trackVolume",
+            "trackMute",
+            "trackPan",
+            "synth_param1",
+            "synth_param2",
+            "synth_param3",
+            "synth_param4",
+            "ampAttack",
+            "ampDecay",
+            "ampSustain",
+            "ampRelease",
+            "filterAttack",
+            "filterDecay",
+            "filterSustain",
+            "filterRelease",
+            "filterCutoff",
+            "resonance",
+            "envAmount",
+            "keyTracking",
+            "sendToTape",
+            "sendToFX1",
+            "sendToFX2",
+          ];
+
+          // We'll build a weighted list based on the patch generation parameters,
+          // so we pick a parameter that best fits the current patch "vibe".
+          // For example:
+          // - If movement is high, we might emphasize parameters that produce big sweeps (filterCutoff, resonance, etc.).
+          // - If patchType is "fx", maybe we favor sendToTape/sendToFX.
+          const weightedTargets = [];
+
+          function addWeighted(target, weight) {
+            for (let i = 0; i < weight; i++) {
+              weightedTargets.push(target);
+            }
+          }
+
+          // Go through each possible target, assign some base weight, then boost
+          // if it makes sense given patch params.
+          possibleTargets.forEach((target) => {
+            let weight = 1; // base
+
+            // Example synergy: high movement => more likely to automate filter or resonance
+            if (
+              movement > 0.5 &&
+              (target === "filterCutoff" || target === "resonance")
+            ) {
+              weight += 3;
+            }
+
+            // If patchType is "fx", maybe prioritize sends or "trackPan"
+            if (
+              patchType === "fx" &&
+              (target === "sendToTape" ||
+                target === "sendToFX1" ||
+                target === "sendToFX2")
+            ) {
+              weight += 3;
+            }
+
+            // If brightness is high, automating filterCutoff or envAmount might be nice
+            if (
+              brightness > 0.6 &&
+              (target === "filterCutoff" || target === "envAmount")
+            ) {
+              weight += 2;
+            }
+
+            // If patchType is "bass", maybe prefer automating "trackVolume" or "synth_param4" (just as an example)
+            if (
+              patchType === "bass" &&
+              (target === "trackVolume" || target === "synth_param4")
+            ) {
+              weight += 2;
+            }
+
+            // etc. (You can add more rules for complexity, character, etc.)
+
+            addWeighted(target, weight);
+          });
+
+          // If for some reason all weighting ended up minimal, just ensure we have at least some
+          // fallback (we already set a base weight=1, so it should be fine).
+
+          // Finally, pick one target from the weighted array
+          const chosenTarget =
+            weightedTargets[Math.floor(Math.random() * weightedTargets.length)];
+
+          // We'll choose startValue and endValue using movement to shape the range:
+          // higher movement => more dramatic changes
+          const spread = Math.floor(20 + movement * 64); // e.g. up to about 84 if movement=1
+          const startVal = Math.floor(Math.random() * (128 - spread));
+          const endVal = startVal + spread;
+
+          // Duration in beats: from 4..(12 or so) if movement is big
+          const duration = Math.floor(4 + movement * 8);
+
+          automations.push({
+            target: chosenTarget,
+            startValue: startVal,
+            endValue: endVal,
+            startBeat: 0,
+            duration,
+          });
+
+          // If you need more than one automation, you can push multiple objects or
+          // tweak logic to decide how many. But for now, just one is created.
+        }
+
+        // ---------------------
+        // 9) FX GENERATION
+        // ---------------------
+        const fxOptions = [
+          {
+            type: "Chorus",
+            recommendedFor: ["pad", "lead", "fx"],
+            synergy: {
+              movement: 0.4,
+              spatialWidth: 0.3,
+            },
+            paramAssignment: (vars) => {
+              const { movement, spatialWidth, brightness, complexity } = vars;
+              return {
+                Rate: Math.floor(20 + movement * 80),
+                Depth: Math.floor(30 + movement * 50),
+                Feedback: Math.floor(10 + complexity * 60),
+                Stereo: Math.floor(spatialWidth * 127),
+                recommendedWet: Math.floor(
+                  40 + brightness * 30 + movement * 30
+                ),
+              };
+            },
+          },
+          {
+            type: "Delay",
+            recommendedFor: ["lead", "fx", "pad"],
+            synergy: {
+              movement: 0.3,
+              complexity: 0.3,
+            },
+            paramAssignment: (vars) => {
+              const { brightness, movement, complexity } = vars;
+              let size = Math.floor(Math.random() * 6);
+              if (movement > 0.6 || complexity > 0.6) {
+                size = Math.floor(Math.random() * 6);
+              }
+              let dry = Math.floor(50 + (brightness - 0.5) * 20);
+              dry = Math.max(
+                0,
+                Math.min(127, dry + Math.floor(Math.random() * 20 - 10))
+              );
+              return {
+                Size: size,
+                Fine: Math.floor(Math.random() * 50),
+                Amount: Math.floor(20 + movement * 80),
+                Dry: dry,
+              };
+            },
+          },
+          {
+            type: "Distortion",
+            recommendedFor: ["bass", "fx", "lead"],
+            synergy: {
+              character: 0.5,
+            },
+            paramAssignment: (vars) => {
+              const { character, brightness } = vars;
+              return {
+                Drive: Math.floor(20 + character * 100),
+                Clip: Math.floor(character * 80 + Math.random() * 20),
+                "Low Cut": Math.floor((1 - brightness) * 50 + character * 20),
+                "High Cut": Math.floor(brightness * 70),
+                recommendedWet: Math.floor(
+                  60 + character * 40 - brightness * 30
+                ),
+              };
+            },
+          },
+          {
+            type: "Reverb",
+            recommendedFor: ["pad", "lead", "fx"],
+            synergy: {
+              brightness: 0.4,
+              movement: 0.3,
+            },
+            paramAssignment: (vars) => {
+              const { brightness, movement, patchType } = vars;
+              let baseSize = patchType === "pad" ? 80 : 40;
+              let dry = Math.floor(
+                50 + (brightness - 0.5) * 20 + Math.random() * 20
+              );
+              dry = Math.max(0, Math.min(127, dry));
+              return {
+                Size: Math.floor(baseSize + movement * 40),
+                Modulation: Math.floor(movement * 80),
+                Tone: Math.floor(30 + brightness * 70),
+                Dry: dry,
+              };
+            },
+          },
+        ];
+
+        // Weight and select FX
+        const weightedFx = [];
+        fxOptions.forEach((fxDef) => {
+          let weight = 1;
+          if (fxDef.recommendedFor.includes(patchType)) {
+            weight += 3;
+          }
+          const paramMap = {
+            brightness,
+            movement,
+            complexity,
+            character,
+            resonance,
+            spatialWidth,
+            patchType,
+          };
+          for (const [key, minVal] of Object.entries(fxDef.synergy)) {
+            const val = paramMap[key] || 0;
+            if (val >= minVal) {
+              weight += 2;
+            }
+          }
+          for (let i = 0; i < weight; i++) {
+            weightedFx.push(fxDef);
+          }
+        });
+
+        const fxCount = complexity > 0.6 ? 2 : 1;
+        const chosenFx = [];
+        while (chosenFx.length < fxCount && weightedFx.length > 0) {
+          const idx = Math.floor(Math.random() * weightedFx.length);
+          const pick = weightedFx[idx];
+          chosenFx.push(pick);
+          const chosenType = pick.type;
+          for (let i = weightedFx.length - 1; i >= 0; i--) {
+            if (weightedFx[i].type === chosenType) weightedFx.splice(i, 1);
+          }
+        }
+
+        const fx = chosenFx.map((fxDef) => {
+          const fxParams = fxDef.paramAssignment({
+            patchType,
+            brightness,
+            movement,
+            complexity,
+            character,
+            resonance,
+            spatialWidth,
+          });
+          return {
+            type: fxDef.type,
+            ...fxParams,
+          };
+        });
+
+        // ---------------------
+        // 10) RETURN COMPLETE PATCH
+        // ---------------------
+        return {
+          engine,
+          channel,
+          volume,
+          pan,
+          ampEnv: {
+            attack: ampAttack,
+            decay: ampDecay,
+            sustain: ampSustain,
+            release: ampRelease,
+          },
+          filter: {
+            cutoff: filterCutoff,
+            resonance: filterResonance,
+            envAmount,
+            keyTracking,
+            envelope: {
+              attack: filterAttack,
+              decay: filterDecay,
+              sustain: filterSustain,
+              release: filterRelease,
+            },
+          },
+          param1,
+          param2,
+          param3,
+          param4,
+          pattern: {
+            length: patternLength,
+            resolution: patternRes,
+            notes,
+          },
+          automations,
+          lfo,
+          fx,
+        };
+      }
+
+      class EventEmitter {
+        constructor() {
+          this.events = new Map();
+        }
+
+        on(event, callback) {
+          if (!this.events.has(event)) {
+            this.events.set(event, []);
+          }
+          this.events.get(event).push(callback);
+          return this;
+        }
+
+        emit(event, data) {
+          if (this.events.has(event)) {
+            this.events.get(event).forEach((callback) => callback(data));
+          }
+          return this;
+        }
+      }
+
+      class Automation {
+        constructor({
+          target,
+          startValue,
+          endValue,
+          startBeat = 0,
+          duration = 4,
+          repeat = false,
+        }) {
+          this.target = target; // Reference to parameter
+          this.startValue = startValue;
+          this.endValue = endValue;
+          this.startBeat = startBeat; // When automation begins
+          this.duration = duration; // Length in beats
+          this.repeat = repeat; // Whether to loop
+          this.currentBeat = 0;
+        }
+
+        getValue(beat) {
+          if (!this.repeat && beat > this.startBeat + this.duration) {
+            return this.endValue;
+          }
+
+          // Handle repeating automations
+          const normalizedBeat = this.repeat
+            ? (beat - this.startBeat) % this.duration
+            : beat - this.startBeat;
+
+          if (normalizedBeat < 0) return this.startValue;
+          if (normalizedBeat > this.duration) return this.endValue;
+
+          const progress = normalizedBeat / this.duration;
+          return this.startValue + (this.endValue - this.startValue) * progress;
+        }
+      }
+
+      class Note {
+        constructor({
+          pitch,
+          velocity = 100,
+          start = 0,
+          duration = 0.25,
+          channel = 1,
+        }) {
+          this.pitch = pitch;
+          this.velocity = velocity;
+          this.start = start;
+          this.duration = duration;
+          this.channel = channel;
+        }
+
+        getMIDINoteNumber() {
+          const notes = [
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
+          ];
+          const match = this.pitch.match(/([A-G]#?)(\d+)/);
+          if (!match) {
+            throw new Error(`Invalid pitch format: ${this.pitch}`);
+          }
+
+          const [, note, octave] = match;
+          return notes.indexOf(note) + (parseInt(octave) + 1) * 12;
+        }
+
+        clone(overrides = {}) {
+          return new Note({
+            pitch: this.pitch,
+            velocity: this.velocity,
+            start: this.start,
+            duration: this.duration,
+            channel: this.channel,
+            ...overrides,
+          });
+        }
+      }
+
+      class Track extends EventEmitter {
+        constructor({ name, channel, type = "instrument" }) {
+          super();
+          this.name = name;
+          this.channel = channel;
+          this.type = type;
+          this.patterns = [];
+          this.currentPattern = null;
+          this.automations = new Map();
+          this.parameters = Object.fromEntries(
+            Object.entries(PARAMETER_DEFINITIONS).map(
+              ([key, { defaultValue }]) => [key, defaultValue]
+            )
+          );
+        }
+
+        setParameter(parameterName, value) {
+          // Update your in-memory parameter
+          this.parameters[parameterName] = value;
+
+          // Find the corresponding MIDI CC number
+          const ccNumber = MIDI_CCS[parameterName.toUpperCase()];
+
+          // Emit the parameterChange event, passing the info needed to send CC
+          this.emit("parameterChange", {
+            ccNumber,
+            value,
+            channel: this.channel,
+          });
+        }
+
+        get currentPattern() {
+          return this._currentPattern;
+        }
+
+        set currentPattern(pattern) {
+          this._currentPattern = pattern;
+          this.emit("patternChange", pattern);
+        }
+
+        addAutomation(parameterName, automation) {
+          if (!this.automations.has(parameterName)) {
+            this.automations.set(parameterName, []);
+          }
+          this.automations.get(parameterName).push(automation);
+        }
+
+        updateAutomations(beat) {
+          this.automations.forEach((automations, parameterName) => {
+            const activeAutomations = automations.filter(
+              (a) =>
+                beat >= a.startBeat &&
+                (a.repeat || beat <= a.startBeat + a.duration)
+            );
+
+            if (activeAutomations.length > 0) {
+              // Use the last active automation if multiple overlap
+              const value =
+                activeAutomations[activeAutomations.length - 1].getValue(beat);
+              this.setParameter(parameterName, Math.round(value));
+            }
+          });
+        }
+      }
+
+      class Pattern {
+        constructor({ length = 16, resolution = 16 }) {
+          this.length = length; // Pattern length in beats
+          this.resolution = resolution; // Steps per beat
+          this.notes = [];
+          this.loop = true; // Patterns loop by default
+        }
+
+        getNoteEventsInTimeRange(startBeat, endBeat) {
+          const events = [];
+          if (!this.loop) {
+            return this.notes.filter(
+              (note) => note.start >= startBeat && note.start < endBeat
+            );
+          }
+
+          // Handle looping patterns
+          const patternDuration = this.length;
+          const startPattern = Math.floor(startBeat / patternDuration);
+          const endPattern = Math.ceil(endBeat / patternDuration);
+
+          for (let i = startPattern; i < endPattern; i++) {
+            this.notes.forEach((note) => {
+              const noteStart = note.start + i * patternDuration;
+              if (noteStart >= startBeat && noteStart < endBeat) {
+                // clone the note so we keep the prototype (getMIDINoteNumber)
+                events.push(note.clone({ start: noteStart }));
+              }
+            });
+          }
+          return events;
+        }
+      }
+
+      class OPXY extends EventEmitter {
+        constructor() {
+          super();
+          this.tracks = new Map();
+          this.isPlaying = false;
+          this.TICKS_PER_QUARTER = 24;
+          this.STEPS_PER_BEAT = 4;
+          this.TICKS_PER_STEP = this.TICKS_PER_QUARTER / this.STEPS_PER_BEAT;
+          this.clockTickCount = 0;
+          this.currentBeat = 0;
+          this.tempo = 120;
+          this.lastTickTime = null;
+          this.midiOutput = null;
+          this.initializeTracks();
+        }
+
+        async initialize() {
+          try {
+            const access = await navigator.requestMIDIAccess();
+
+            console.log("MIDI Inputs:", Array.from(access.inputs.values()));
+            console.log("MIDI Outputs:", Array.from(access.outputs.values()));
+
+            const outputs = Array.from(access.outputs.values());
+            if (outputs.length > 0) {
+              this.midiOutput = outputs[0];
+              this.updateStatus(
+                `Connected to MIDI output: ${this.midiOutput.name}`
+              );
+            } else {
+              this.updateStatus("No MIDI outputs found.");
+            }
+
+            if (access.inputs.size > 0) {
+              for (let input of access.inputs.values()) {
+                input.onmidimessage = this.handleMidiMessage.bind(this);
+              }
+            } else {
+              this.updateStatus("No MIDI inputs found.");
+            }
+
+            access.onstatechange = this.handleMidiStateChange.bind(this);
+
+            // Start animation frame loop for automations
+            this._updateAutomations();
+
+            return true;
+          } catch (error) {
+            this.updateStatus("Failed to initialize MIDI: " + error.message);
+            return false;
+          }
+        }
+
+        sendMidiCC(channel, ccNumber, value) {
+          // 0xB0 indicates a Control Change message
+          // channel - 1 because MIDI channels are 0–15 internally
+          if (this.midiOutput) {
+            this.midiOutput.send([0xb0 | (channel - 1), ccNumber, value]);
+          }
+        }
+
+        _updateAutomations() {
+          for (const track of this.tracks.values()) {
+            track.updateAutomations(this.currentBeat);
+          }
+          requestAnimationFrame(() => this._updateAutomations());
+        }
+
+        updateStatus(message) {
+          const statusDiv = document.getElementById("status");
+          if (statusDiv) {
+            statusDiv.textContent = message;
+          }
+        }
+
+        start() {
+          if (!this.isPlaying) {
+            this.isPlaying = true;
+            this.clockTickCount = 0;
+            this.updateStatus("Started");
+          }
+        }
+
+        stop() {
+          if (this.isPlaying) {
+            this.isPlaying = false;
+            this.updateStatus("Stopped");
+          }
+        }
+
+        initializeTracks() {
+          // Create 8 instrument tracks (channels 1–8)
+          for (let i = 1; i <= 8; i++) {
+            const track = new Track({
+              name: `track${i}`, // Use backticks here
+              channel: i,
+              type: "instrument",
+            });
+
+            // Store the track in the OPXY's Map
+            this.tracks.set(`track${i}`, track);
+
+            // Listen for parameterChange events from this track
+            track.on("parameterChange", ({ ccNumber, value, channel }) => {
+              // Ensure you have defined sendMidiCC in OPXY
+              this.sendMidiCC(channel, ccNumber, value);
+            });
+          }
+        }
+
+        processClockTick() {
+          if (!this.isPlaying) return;
+
+          const now = performance.now();
+          if (!this.lastTickTime) {
+            this.lastTickTime = now;
+            return;
+          }
+
+          // Calculate current beat position
+          const ticksElapsed = this.clockTickCount % this.TICKS_PER_QUARTER;
+          const beatsElapsed = this.clockTickCount / this.TICKS_PER_QUARTER;
+          this.currentBeat = beatsElapsed;
+
+          // Process automations for all tracks
+          this.tracks.forEach((track) => {
+            track.updateAutomations(this.currentBeat);
+          });
+
+          // Process notes for the next time window
+          const LOOK_AHEAD = 0.1; // Look ahead 100ms
+          const endBeat = this.currentBeat + LOOK_AHEAD;
+
+          this.tracks.forEach((track) => {
+            if (track.currentPattern) {
+              const notes = track.currentPattern.getNoteEventsInTimeRange(
+                this.currentBeat,
+                endBeat
+              );
+
+              notes.forEach((note) => {
+                const noteOn = [
+                  0x90 | (track.channel - 1),
+                  note.getMIDINoteNumber(),
+                  note.velocity,
+                ];
+                const noteOff = [
+                  0x80 | (track.channel - 1),
+                  note.getMIDINoteNumber(),
+                  0,
+                ];
+
+                if (this.midiOutput) {
+                  const noteStartDelay =
+                    (note.start - this.currentBeat) * (60000 / this.tempo);
+                  const noteDuration = note.duration * (60000 / this.tempo);
+
+                  setTimeout(
+                    () => this.midiOutput.send(noteOn),
+                    noteStartDelay
+                  );
+                  setTimeout(
+                    () => this.midiOutput.send(noteOff),
+                    noteStartDelay + noteDuration
+                  );
+                }
+              });
+            }
+          });
+
+          this.lastTickTime = now;
+        }
+
+        handleMidiMessage(message) {
+          const [status] = message.data;
+
+          switch (status) {
+            case 0xfa: // Start
+              this.start();
+              break;
+            case 0xfc: // Stop
+              this.stop();
+              break;
+            case 0xf8: // Clock Tick
+              if (this.isPlaying) {
+                this.clockTickCount++;
+                this.processClockTick();
+              }
+              break;
+          }
+        }
+
+        handleMidiStateChange(event) {
+          this.updateStatus(
+            `MIDI connection state changed: ${event.port.state}`
+          );
+        }
+        generateAndApplyPatch({
+          patchType = "lead",
+          brightness = 0.5,
+          movement = 0.5,
+          complexity = 0.5,
+          character = 0.5,
+          resonance = 0.5,
+          spatialWidth = 0.5,
+          engineSelection = "random",
+        } = {}) {
+          // Generate the patch
+          const patch = generatePatch({
+            patchType,
+            brightness,
+            movement,
+            complexity,
+            character,
+            resonance,
+            spatialWidth,
+            engineSelection,
+          });
+
+          console.log("Generated patch:", JSON.stringify(patch, null, 2));
+
+          // Get the track for the specified channel
+          const track = this.tracks.get(`track${patch.channel}`);
+          if (!track) {
+            console.error(`No track found for channel ${patch.channel}`);
+            return;
+          }
+
+          function updateTrackParams(track, params) {
+            for (const [key, value] of Object.entries(params)) {
+              track.setParameter(key, value);
+            }
+          }
+
+          // Update basic parameters
+          updateTrackParams(track, {
+            trackVolume: patch.volume,
+            trackPan: patch.pan,
+            // Amp envelope
+            ampAttack: patch.ampEnv.attack,
+            ampDecay: patch.ampEnv.decay,
+            ampSustain: patch.ampEnv.sustain,
+            ampRelease: patch.ampEnv.release,
+            // Filter parameters
+            filterCutoff: patch.filter.cutoff,
+            resonance: patch.filter.resonance,
+            envAmount: patch.filter.envAmount,
+            keyTracking: patch.filter.keyTracking,
+            // Filter envelope
+            filterAttack: patch.filter.envelope.attack,
+            filterDecay: patch.filter.envelope.decay,
+            filterSustain: patch.filter.envelope.sustain,
+            filterRelease: patch.filter.envelope.release,
+            // Engine parameters
+            param1: patch.param1,
+            param2: patch.param2,
+            param3: patch.param3,
+            param4: patch.param4,
+          });
+
+          // Set up FX sends if FX are specified
+          if (patch.fx && patch.fx.length > 0) {
+            updateTrackParams(track, {
+              sendToFX1: patch.fx[0].recommendedWet || 64,
+              sendToFX2: patch.fx[1]?.recommendedWet || 0,
+            });
+          }
+
+          // Set up the LFO if specified
+          if (patch.lfo) {
+            const {
+              type,
+              speed,
+              amount,
+              destination,
+              parameter,
+              ...lfoParams
+            } = patch.lfo;
+            track.setParameter(
+              "lfoShape",
+              {
+                element: 0,
+                random: 1,
+                tremolo: 2,
+                value: 3,
+              }[type] || 0
+            );
+
+            // Set LFO parameters based on type
+            switch (type) {
+              case "element":
+                track.setParameter("param1", speed || 64);
+                track.setParameter("param2", amount || 64);
+                break;
+              case "random":
+              case "tremolo":
+              case "value":
+                track.setParameter("param1", speed || 64);
+                track.setParameter("param2", amount || 64);
+                if (lfoParams.envelope) {
+                  track.setParameter("param3", lfoParams.envelope);
+                }
+                break;
+            }
+          }
+
+          // Create and set up pattern
+          if (patch.pattern && patch.pattern.notes) {
+            const pattern = new Pattern({
+              length: patch.pattern.length || 4,
+              resolution: patch.pattern.resolution || 16,
+            });
+
+            // Add notes to pattern
+            patch.pattern.notes.forEach((noteData) => {
+              pattern.notes.push(
+                new Note({
+                  pitch: noteData.pitch,
+                  velocity: noteData.velocity || 100,
+                  start: noteData.start,
+                  duration: noteData.duration,
+                  channel: patch.channel,
+                })
+              );
+            });
+
+            // Set as current pattern
+            track.currentPattern = pattern;
+          }
+
+          // Set up automations
+          if (patch.automations && patch.automations.length > 0) {
+            patch.automations.forEach((autoData) => {
+              const [module, param] = autoData.target.split(".");
+              const automation = new Automation({
+                target: param,
+                startValue: autoData.startValue,
+                endValue: autoData.endValue,
+                startBeat: autoData.startBeat,
+                duration: autoData.duration,
+                repeat: true, // Make automation loop by default
+              });
+              track.addAutomation(param, automation);
+            });
+          }
+
+          return patch;
+        }
+      }
+
+      // Add to the HTML
+      const generateButton = document.createElement("button");
+      generateButton.textContent = "Generate Random Patch";
+
+      document.body.appendChild(generateButton);
+
+      // Create and initialize the OPXY instance
+      const opxy = new OPXY();
+
+      generateButton.onclick = () => {
+        const getSliderValue = (id) => document.getElementById(id).value / 100;
+
+        opxy.generateAndApplyPatch({
+          patchType: document.getElementById("patchType").value,
+          engineSelection: document.getElementById("engineType").value,
+          brightness: getSliderValue("brightness"),
+          movement: getSliderValue("movement"),
+          complexity: getSliderValue("complexity"),
+          character: getSliderValue("character"),
+          resonance: getSliderValue("resonance"),
+          spatialWidth: getSliderValue("spatialWidth"),
+        });
+      };
+
+      opxy.initialize().then(() => {
+        console.log("OPXY initialized and ready");
+      });
+    </script>
+  </body>
+</html>
