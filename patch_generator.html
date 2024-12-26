@@ -58,8 +58,6 @@
   <body>
     <div id="status"></div>
 
-
-
     <table class="patch-controls">
       <tr>
         <td>Patch Type:</td>
@@ -193,11 +191,19 @@
       </tr>
     </table>
 
-    <table class="patch-controls"></table>
+    <table class="patch-controls">
       <tr>
         <td>Synth on Track 1:</td>
         <td>
           <select id="track1Synth"></select>
+        </td>
+        <td>Synth on Track 5:</td>
+        <td>
+          <select id="track5Synth"></select>
+        </td>
+        <td>FX1:</td>
+        <td>
+          <select id="fx1Select"></select>
         </td>
       </tr>
       <tr>
@@ -205,11 +211,23 @@
         <td>
           <select id="track2Synth"></select>
         </td>
+        <td>Synth on Track 6:</td>
+        <td>
+          <select id="track6Synth"></select>
+        </td>
+        <td>FX2:</td>
+        <td>
+          <select id="fx2Select"></select>
+        </td>
       </tr>
       <tr>
         <td>Synth on Track 3:</td>
         <td>
           <select id="track3Synth"></select>
+        </td>
+        <td>Synth on Track 7:</td>
+        <td>
+          <select id="track7Synth"></select>
         </td>
       </tr>
       <tr>
@@ -217,41 +235,9 @@
         <td>
           <select id="track4Synth"></select>
         </td>
-      </tr>
-      <tr>
-        <td>Synth on Track 5:</td>
-        <td>
-          <select id="track5Synth"></select>
-        </td>
-      </tr>
-      <tr>
-        <td>Synth on Track 6:</td>
-        <td>
-          <select id="track6Synth"></select>
-        </td>
-      </tr>
-      <tr>
-        <td>Synth on Track 7:</td>
-        <td>
-          <select id="track7Synth"></select>
-        </td>
-      </tr>
-      <tr>
         <td>Synth on Track 8:</td>
         <td>
           <select id="track8Synth"></select>
-        </td>
-      </tr>
-      <tr>
-        <td>FX1:</td>
-        <td>
-          <select id="fx1Select"></select>
-        </td>
-      </tr>
-      <tr>
-        <td>FX2:</td>
-        <td>
-          <select id="fx2Select"></select>
         </td>
       </tr>
     </table>
@@ -269,7 +255,16 @@
         const opxy = new OPXY();
 
         // Dynamically create option elements for track1Synth to track8Synth
-        const synthOptions = ["Axis", "Dissolve", "Eano", "HardSync", "Organ", "Prism", "Simple", "Wavetable"];
+        const synthOptions = [
+          "Axis",
+          "Dissolve",
+          "Eano",
+          "HardSync",
+          "Organ",
+          "Prism",
+          "Simple",
+          "Wavetable",
+        ];
         for (let i = 1; i <= 8; i++) {
           const trackSelect = document.getElementById(`track${i}Synth`);
           synthOptions.forEach((synth, index) => {
@@ -283,18 +278,19 @@
           });
         }
 
-        const fxOptions = [
-          "Chorus",
-          "Delay",
-          "Distortion",
-          "Reverb"
-        ];
+        const fxOptions = ["Chorus", "Delay", "Distortion", "Reverb"];
         ["fx1Select", "fx2Select"].forEach((fxId) => {
           const fxSelect = document.getElementById(fxId);
           fxOptions.forEach((fx) => {
             const option = document.createElement("option");
             option.value = fx;
             option.textContent = fx;
+            if (
+              (fxId === "fx1Select" && fx === "Delay") ||
+              (fxId === "fx2Select" && fx === "Reverb")
+            ) {
+              option.selected = true;
+            }
             fxSelect.appendChild(option);
           });
         });
