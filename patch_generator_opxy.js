@@ -572,4 +572,44 @@ class OPXY extends EventEmitter {
 
     return patch;
   }
+
+  getCurrentPlaying() {
+    const currentPlaying = {};
+
+    this.tracks.forEach((track, trackName) => {
+      const notes = track.currentPattern ? track.currentPattern.notes : [];
+      const automations = track.automations;
+
+      currentPlaying.notes = currentPlaying.notes || [];
+      currentPlaying.automations = currentPlaying.automations || [];
+
+      notes.forEach((note) => {
+        currentPlaying.notes.push({
+          track: trackName,
+          pitch: note.pitch,
+          velocity: note.velocity,
+          start: note.start,
+          duration: note.duration,
+        });
+      });
+
+      if (automations) {
+        Array.from(automations.entries()).forEach(([param, automations]) => {
+          automations.forEach((auto) => {
+            currentPlaying.automations.push({
+              track: trackName,
+              parameter: param,
+              startValue: auto.startValue,
+              endValue: auto.endValue,
+              startBeat: auto.startBeat,
+              duration: auto.duration,
+              repeat: auto.repeat,
+            });
+          });
+        });
+      }
+    });
+
+    return currentPlaying;
+  }
 }

@@ -250,9 +250,11 @@
     </div>
 
     <script>
+      var opxy;
+
       document.addEventListener("DOMContentLoaded", () => {
         // Create and initialize the OPXY instance
-        const opxy = new OPXY();
+        opxy = new OPXY();
 
         // Dynamically create option elements for track1Synth to track8Synth
         const synthOptions = [
