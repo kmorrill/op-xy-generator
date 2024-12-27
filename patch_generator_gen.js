@@ -191,58 +191,64 @@ function generatePatch({
   // ---------------------
   // 6) PATTERN
   // ---------------------
-  const patternLength = 4;
+  const patternLength = 16; // 4 bars per octave, 4 octaves
   const patternRes = 16;
   const notes = [];
-  const noteCount = complexity > 0.7 ? 4 : 2;
+  let octaves = ["2", "3", "4", "5", "6"]; // Octaves to audition
+  if (patchType === "bass") {
+    octaves = ["1", "2", "3"]; // Stick to lower octaves for bass
+  }
+  const noteCount = complexity > 0.7 ? 4 : 2; // Notes per octave
 
-  for (let i = 0; i < noteCount; i++) {
-    const pitches = [
-      "C3",
-      "D3",
-      "E3",
-      "G3",
-      "B3",
-      "C4",
-      "D4",
-      "E4",
-      "G4",
-      "A4",
-      "B4",
-      "C5",
-    ];
-    const randomPitch = pitches[Math.floor(Math.random() * pitches.length)];
+  for (let octaveIndex = 0; octaveIndex < octaves.length; octaveIndex++) {
+    for (let i = 0; i < noteCount; i++) {
+      const pitches = [
+        `C${octaves[octaveIndex]}`,
+        `D${octaves[octaveIndex]}`,
+        `E${octaves[octaveIndex]}`,
+        `G${octaves[octaveIndex]}`,
+        `B${octaves[octaveIndex]}`,
+        `C${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `D${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `E${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `G${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `A${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `B${parseInt(octaves[octaveIndex], 10) + 1}`,
+        `C${parseInt(octaves[octaveIndex], 10) + 2}`,
+      ];
+      const randomPitch = pitches[Math.floor(Math.random() * pitches.length)];
 
-    // Adjust note duration based on patch type
-    let duration;
-    switch (patchType) {
-      case "pad":
-        duration = 2 + Math.random() * 2;
-        break;
-      case "pluck":
-        duration = 0.25 + Math.random() * 0.25;
-        break;
-      case "bass":
-        duration = 0.5 + Math.random() * 0.5;
-        break;
-      default:
-        duration = 0.5 + Math.random();
+      // Adjust note duration based on patch type
+      let duration;
+      switch (patchType) {
+        case "pad":
+          duration = 2 + Math.random() * 2;
+          break;
+        case "pluck":
+          duration = 0.25 + Math.random() * 0.25;
+          break;
+        case "bass":
+          duration = 0.5 + Math.random() * 0.5;
+          break;
+        default:
+          duration = 0.5 + Math.random();
+      }
+
+      const startBeat = Math.floor(Math.random() * 4) + octaveIndex * 4; // Adjust start beat for each octave
+      const trackSelects = document.querySelectorAll('[id^="track"]');
+
+      const selectedTrack = Array.from(trackSelects).find(
+        (track) => track.value === engine
+      );
+      const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
+      channel_for_engine = trackNumber + 1; // save the channel number
+      notes.push({
+        pitch: randomPitch,
+        start: startBeat,
+        duration,
+        channel: channel_for_engine,
+      });
     }
-
-    const startBeat = Math.floor(Math.random() * 4);
-    const trackSelects = document.querySelectorAll('[id^="track"]');
-
-    const selectedTrack = Array.from(trackSelects).find(
-      (track) => track.value === engine
-    );
-    const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
-    channel_for_engine = trackNumber + 1; // save the channel number
-    notes.push({
-      pitch: randomPitch,
-      start: startBeat,
-      duration,
-      channel: channel_for_engine,
-    });
   }
 
   // ---------------------
