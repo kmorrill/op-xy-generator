@@ -353,29 +353,45 @@ function generatePatch({
     // If for some reason all weighting ended up minimal, just ensure we have at least some
     // fallback (we already set a base weight=1, so it should be fine).
 
-    // Finally, pick one target from the weighted array
-    const chosenTarget =
-      weightedTargets[Math.floor(Math.random() * weightedTargets.length)];
+    // Randomly choose between 2-4 automations
+    const numAutomations = Math.floor(Math.random() * 3) + 2; // Random number between 2-4
 
-    // We'll choose startValue and endValue using movement to shape the range:
-    // higher movement => more dramatic changes
-    const spread = Math.floor(20 + movement * 64); // e.g. up to about 84 if movement=1
-    const startVal = Math.floor(Math.random() * (128 - spread));
-    const endVal = startVal + spread;
+    // Keep track of chosen targets to avoid duplicates
+    const chosenTargets = new Set();
 
-    // Duration in beats: from 4..(12 or so) if movement is big
-    const duration = Math.floor(4 + movement * 8);
+    // Create multiple automations
+    for (let i = 0; i < numAutomations; i++) {
+      // Keep trying until we find an unused target
+      let chosenTarget;
+      do {
+        chosenTarget =
+          weightedTargets[Math.floor(Math.random() * weightedTargets.length)];
+      } while (chosenTargets.has(chosenTarget));
 
-    automations.push({
-      target: chosenTarget,
-      startValue: startVal,
-      endValue: endVal,
-      startBeat: 0,
-      duration,
-    });
+      chosenTargets.add(chosenTarget);
 
-    // If you need more than one automation, you can push multiple objects or
-    // tweak logic to decide how many. But for now, just one is created.
+      // We'll choose startValue and endValue using movement to shape the range:
+      // higher movement => more dramatic changes
+      const spread = Math.floor(20 + movement * 64); // e.g. up to about 84 if movement=1
+      const startVal = Math.floor(Math.random() * (128 - spread));
+      const endVal = startVal + spread;
+
+      // Duration in beats: from 4..(12 or so) if movement is big
+      // Vary the duration slightly for each automation to create more interesting patterns
+      const baseDuration = Math.floor(4 + movement * 8);
+      const duration = baseDuration + Math.floor(Math.random() * 4) - 2; // +/- 2 beats
+
+      // Vary the start beat for each automation
+      const startBeat = Math.floor(Math.random() * 4); // Start within first 4 beats
+
+      automations.push({
+        target: chosenTarget,
+        startValue: startVal,
+        endValue: endVal,
+        startBeat,
+        duration,
+      });
+    }
   }
 
   // ---------------------
@@ -581,9 +597,13 @@ function generatePatch({
   fxDetails.forEach((detail) => patchDetails.appendChild(detail));
 
   if (automations.length > 0) {
-    const automationDetail = document.createElement("li");
-    automationDetail.textContent = `Automated Parameter: ${automations[0].target}`;
-    patchDetails.appendChild(automationDetail);
+    automations.forEach((automation, index) => {
+      const automationDetail = document.createElement("li");
+      automationDetail.textContent = `Automation ${index + 1}: ${
+        automation.target
+      }`;
+      patchDetails.appendChild(automationDetail);
+    });
   }
 
   // ---------------------
