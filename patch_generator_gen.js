@@ -307,8 +307,16 @@ function generatePatch({
 
       // Example synergy: high movement => more likely to automate filter or resonance
       if (
-        movement > 0.5 &&
-        (target === "filterCutoff" || target === "resonance")
+        movement > 0.6 &&
+        [
+          "filterCutoff",
+          "resonance",
+          "trackPan",
+          "param1",
+          "param2",
+          "param3",
+          "pram4",
+        ].includes(target)
       ) {
         weight += 3;
       }
