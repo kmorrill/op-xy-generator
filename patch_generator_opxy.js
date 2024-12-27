@@ -497,38 +497,6 @@ class OPXY extends EventEmitter {
       });
     }
 
-    // Set up the LFO if specified
-    if (patch.lfo) {
-      const { type, speed, amount, destination, parameter, ...lfoParams } =
-        patch.lfo;
-      track.setParameter(
-        "lfoShape",
-        {
-          element: 0,
-          random: 1,
-          tremolo: 2,
-          value: 3,
-        }[type] || 0
-      );
-
-      // Set LFO parameters based on type
-      switch (type) {
-        case "element":
-          track.setParameter("param1", speed || 64);
-          track.setParameter("param2", amount || 64);
-          break;
-        case "random":
-        case "tremolo":
-        case "value":
-          track.setParameter("param1", speed || 64);
-          track.setParameter("param2", amount || 64);
-          if (lfoParams.envelope) {
-            track.setParameter("param3", lfoParams.envelope);
-          }
-          break;
-      }
-    }
-
     // Create and set up pattern
     if (patch.pattern && patch.pattern.notes) {
       const pattern = new Pattern({

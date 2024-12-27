@@ -3,99 +3,99 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Glitch Effect Demo</title>
-    <script>
-      let midiAccess;
-      let midiOutput;
-
-      // Initialize Web MIDI
-      navigator.requestMIDIAccess().then((access) => {
-        midiAccess = access;
-        const outputs = Array.from(midiAccess.outputs.values());
-        if (outputs.length > 0) {
-          midiOutput = outputs[0];
-          console.log(`Using MIDI output: ${midiOutput.name}`);
-        } else {
-          console.error("No MIDI outputs available.");
-          alert("No MIDI outputs available.");
-        }
-      });
-
-      // Helper to send MIDI CC messages
-      function sendCC(cc, value, channel = 15) {
-        if (midiOutput) {
-          const status = 0xb0 | (channel - 1); // Control Change for specified channel
-          midiOutput.send([status, cc, value]);
-          console.log(
-            `MIDI CC Sent: CC ${cc}, Value ${value}, Channel ${channel}`
-          );
-        }
-      }
-
-      // Helper to send MIDI Note On and Off
-      function sendNoteOn(note, velocity, channel) {
-        const noteOn = 0x90 | (channel - 1);
-        if (midiOutput) {
-          midiOutput.send([noteOn, note, velocity]);
-          console.log(
-            `Note On: ${note}, Velocity: ${velocity}, Channel: ${channel}`
-          );
-        }
-      }
-
-      function sendNoteOff(note, channel) {
-        const noteOff = 0x80 | (channel - 1);
-        if (midiOutput) {
-          midiOutput.send([noteOff, note, 0]);
-        }
-      }
-
-      // Start the Glitch Demo
-      function startGlitchDemo() {
-        const tempo = 120; // BPM
-        const beatDuration = (60 / tempo) * 1000; // ms per beat
-        const ccParams = [
-          { cc: 12, start: 0, end: 127 }, // Modulate Speed
-          { cc: 13, start: 64, end: 0 }, // Reverse
-          { cc: 14, start: 127, end: 0 }, // Pitch Shift
-          { cc: 15, start: 50, end: 127 }, // Tape Mod Depth
-        ];
-
-        // Schedule CC changes over 4 beats
-        ccParams.forEach(({ cc, start, end }, index) => {
-          const stepDuration = beatDuration / 4; // Divide beats into steps
-          const steps = 16; // Total modulation steps over 4 beats
-
-          for (let i = 0; i <= steps; i++) {
-            const value = Math.round(start + ((end - start) * i) / steps);
-            setTimeout(
-              () => sendCC(cc, value),
-              i * stepDuration + index * beatDuration
-            );
-          }
-        });
-
-        // Hold a Middle C note for the duration of the glitch demo
-        const note = 60; // Middle C
-        const velocity = 100; // Standard velocity
-        const channel = 14; // Tape track channel
-
-        // Send Note On at the start
-        sendNoteOn(note, velocity, channel);
-
-        // Schedule Note Off after the glitch demo completes
-        const glitchDuration = beatDuration * (ccParams.length * 4); // Total duration of CC modulations
-        setTimeout(() => sendNoteOff(note, channel), glitchDuration);
-
-        console.log("Glitch demo started!");
-      }
-    </script>
+    <title>MIDI CC Control</title>
   </head>
   <body>
-    <h1>Glitch Effect Demo</h1>
+    <h1>OP-XY MIDI CC Control</h1>
     <p>
-      Click the button below to trigger the glitch effect on the Tape track.
+      <strong>Note:</strong> This is for testing. If you find results, please
+      comment on
+      <a
+        href="https://docs.google.com/spreadsheets/d/1zRCaETkKXG4sMAbXxMcYvS4RCCAOrMtmAxHE4lVH8CU/edit?pli=1&gid=0#gid=0"
+        target="_blank"
+        >this spreadsheet</a
+      >
+      with new channel mappings you find.
     </p>
-    <button onclick="startGlitchDemo()">Trigger Glitch Effect</button>
+
+    <label for="midiCC">MIDI CC:</label>
+    <select id="midiCC"></select>
+
+    <label for="midiChannel">MIDI Channel:</label>
+    <select id="midiChannel"></select>
+
+    <label for="midiValue">Value:</label>
+    <input type="range" id="midiValue" min="0" max="127" value="64" />
+
+    <script>
+      let midiOutput = null;
+
+      async function initializeMIDI() {
+        try {
+          const access = await navigator.requestMIDIAccess();
+
+          const outputs = Array.from(access.outputs.values());
+          if (outputs.length > 0) {
+            midiOutput = outputs[0];
+            console.log(`Connected to MIDI output: ${midiOutput.name}`);
+          } else {
+            console.log("No MIDI outputs found.");
+          }
+
+          access.onstatechange = (event) => {
+            console.log(`MIDI connection state changed: ${event.port.state}`);
+          };
+        } catch (error) {
+          console.error("Failed to initialize MIDI: ", error);
+        }
+      }
+
+      function sendMIDIMessage() {
+        if (!midiOutput) {
+          console.warn("No MIDI output available.");
+          return;
+        }
+
+        const cc = parseInt(midiCCSelect.value, 10);
+        const channel = parseInt(midiChannelSelect.value, 10);
+        const value = parseInt(midiValueSlider.value, 10);
+
+        // Send MIDI CC message (0xB0 is Control Change)
+        const message = [0xb0 | (channel - 1), cc, value];
+        midiOutput.send(message);
+        console.log(
+          `Sent MIDI CC: ${cc} on Channel: ${channel} with Value: ${value}`
+        );
+      }
+
+      // Populate MIDI CC options (0-90)
+      const midiCCSelect = document.getElementById("midiCC");
+      for (let i = 0; i <= 91; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `CC ${i}`;
+        midiCCSelect.appendChild(option);
+      }
+
+      // Populate MIDI Channel options (1-16)
+      const midiChannelSelect = document.getElementById("midiChannel");
+      for (let i = 1; i <= 16; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `Channel ${i}`;
+        midiChannelSelect.appendChild(option);
+      }
+
+      // Get slider value and send MIDI message on input changes
+      const midiValueSlider = document.getElementById("midiValue");
+
+      // Add event listeners
+      midiCCSelect.addEventListener("change", sendMIDIMessage);
+      midiChannelSelect.addEventListener("change", sendMIDIMessage);
+      midiValueSlider.addEventListener("input", sendMIDIMessage);
+
+      // Initialize MIDI on page load
+      initializeMIDI();
+    </script>
   </body>
 </html>

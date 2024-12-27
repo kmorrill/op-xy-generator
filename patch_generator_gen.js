@@ -1,6 +1,6 @@
 const PARAMETER_DEFINITIONS = {
-  trackVolume: { cc: 7, defaultValue: 64 },
-  trackMute: { cc: 9, defaultValue: 0 },
+  trackVolume: { cc: 7, defaultValue: 99 },
+  trackMute: { cc: 9, defaultValue: 0 }, // TODO less useful, and if we use it we need to flip between 0/1
   trackPan: { cc: 10, defaultValue: 64 },
   param1: { cc: 12, defaultValue: 50 },
   param2: { cc: 13, defaultValue: 50 },
@@ -14,16 +14,20 @@ const PARAMETER_DEFINITIONS = {
   filterDecay: { cc: 25, defaultValue: 64 },
   filterSustain: { cc: 26, defaultValue: 64 },
   filterRelease: { cc: 27, defaultValue: 64 },
+  polyMonoLegator: { cc: 28, defaultValue: 64 }, // TODO need to clarify the zones you're settin; gpoly 0-42; mono 43-83; legator 84-
+  portamento: { cc: 29, defaultValue: 64 },
+  pitchBendAmount: { cc: 30, defaultValue: 64 },
+  engineVolume: { cc: 31, defaultValue: 99 },
   filterCutoff: { cc: 32, defaultValue: 64 },
   resonance: { cc: 33, defaultValue: 64 },
   envAmount: { cc: 34, defaultValue: 64 },
   keyTracking: { cc: 35, defaultValue: 64 },
-  sendToExt: { cc: 36, defaultValue: 0 },
-  sendToTape: { cc: 37, defaultValue: 0 },
+  // sendToExt: { cc: 36, defaultValue: 0 },
+  // sendToTape: { cc: 37, defaultValue: 0 },
   sendToFX1: { cc: 38, defaultValue: 0 },
   sendToFX2: { cc: 39, defaultValue: 0 },
-  lfoShape: { cc: 40, defaultValue: 0 },
-  lfoOnsetDest: { cc: 41, defaultValue: 0 },
+  // lfoShape: { cc: 40, defaultValue: 0 }, // not working right now since we can't control source or amount
+  // lfoOnsetDest: { cc: 41, defaultValue: 0 },
 };
 
 const MIDI_CCS = Object.fromEntries(
@@ -242,48 +246,6 @@ function generatePatch({
   }
 
   // ---------------------
-  // 7) LFO SETTINGS
-  // ---------------------
-  const lfoTypes = ["element", "random", "tremolo", "value"];
-  let lfoType;
-
-  // Weight LFO type selection based on patch characteristics
-  if (patchType === "pad" || movement > 0.7) {
-    lfoType = Math.random() > 0.5 ? "element" : "random";
-  } else if (patchType === "bass" || patchType === "lead") {
-    lfoType = "tremolo";
-  } else if (complexity > 0.6) {
-    lfoType = "value";
-  } else {
-    lfoType = lfoTypes[Math.floor(Math.random() * lfoTypes.length)];
-  }
-
-  let lfo = { type: lfoType };
-  switch (lfoType) {
-    case "element":
-      lfo.source = ["gyroscope", "microphone", "amp envelope", "sum"][
-        Math.floor(Math.random() * 4)
-      ];
-      lfo.rate = Math.floor(movement * 127);
-      lfo.amount = Math.floor(character * 127);
-      break;
-    case "random":
-      lfo.speed = Math.floor(movement * 127);
-      lfo.amount = Math.floor(complexity * 127);
-      lfo.envelope = Math.floor((1 - movement) * 127);
-      break;
-    case "tremolo":
-      lfo.speed = Math.floor(movement * 127);
-      lfo.amount = Math.floor(character * 127);
-      lfo.shape = Math.random() > 0.5 ? "sine" : "triangle";
-      break;
-    case "value":
-      lfo.speed = Math.floor(movement * 127);
-      lfo.amount = Math.floor(complexity * 127);
-      break;
-  }
-
-  // ---------------------
   // 8) AUTOMATION
   // ---------------------
   const automations = [];
@@ -309,9 +271,12 @@ function generatePatch({
       "resonance",
       "envAmount",
       "keyTracking",
-      "sendToTape",
       "sendToFX1",
       "sendToFX2",
+      "polyMonoLegator",
+      "portamento",
+      "pitchBendAmount",
+      "engineVolume",
     ];
 
     // We'll build a weighted list based on the patch generation parameters,
@@ -343,9 +308,7 @@ function generatePatch({
       // If patchType is "fx", maybe prioritize sends or "trackPan"
       if (
         patchType === "fx" &&
-        (target === "sendToTape" ||
-          target === "sendToFX1" ||
-          target === "sendToFX2")
+        (target === "sendToFX1" || target === "sendToFX2")
       ) {
         weight += 3;
       }
@@ -643,7 +606,6 @@ function generatePatch({
       notes,
     },
     automations,
-    lfo,
     fx,
   };
 }
