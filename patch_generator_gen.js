@@ -194,9 +194,11 @@ function generatePatch({
   const patternLength = 16; // 4 bars per octave, 4 octaves
   const patternRes = 16;
   const notes = [];
-  let octaves = ["2", "3", "4", "5", "6"]; // Octaves to audition
+  let octaves;
   if (patchType === "bass") {
-    octaves = ["1", "2", "3"]; // Stick to lower octaves for bass
+    octaves = ["2", "3", "4"]; // Lower octaves for bass
+  } else {
+    octaves = ["2", "3", "4", "5", "6"]; // Full spectrum for other types
   }
   const noteCount = complexity > 0.7 ? 4 : 2; // Notes per octave
 
