@@ -1,6 +1,412 @@
+// Define parameter mappings for engines
+const AXIS_PARAMETER_WEIGHTS = {
+  param1: (brightness, patchType) => {
+    // Tone
+    return {
+      distribution: "linear",
+      min: 0,
+      max: 127,
+      bias: brightness, // 0 to 1
+    };
+  },
+  param2: (patchType) => {
+    // Ratio
+    switch (patchType) {
+      case "pad":
+        return { fixed: 64 }; // Midpoint
+      case "bass":
+        return { fixed: 80 }; // Adding a fifth
+      case "ear_candy":
+        return { fixed: 64 }; // Avoiding fifths
+      default:
+        return { fixed: 64 }; // Default to midpoint
+    }
+  },
+  param3: (patchType) => {
+    // Shape
+    switch (patchType) {
+      case "pad":
+        return { fixed: 80 }; // Slightly turned up
+      case "bass":
+        return { fixed: 70 }; // Between square and saw
+      case "keys":
+      case "ear_candy":
+        return { fixed: 90 }; // Closer to square
+      default:
+        return { fixed: 64 }; // Default value
+    }
+  },
+  param4: (movement, patchType) => {
+    // Tremolo
+    if (patchType === "ear_candy") {
+      return { fixed: 127 }; // Turn up all the way
+    }
+    return {
+      distribution: "linear",
+      min: 0,
+      max: 127,
+      bias: movement, // 0 to 1
+    };
+  },
+};
+
+const DISSOLVE_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Swarm
+    switch (patchType) {
+      case "poly":
+        return { fixed: 0 }; // No swarm
+      case "lead":
+        return { fixed: 80 }; // Warmed up noise
+      case "pluck":
+        return { fixed: 43 }; // About a third of the way
+      default:
+        return { fixed: 0 }; // Default to no swarm
+    }
+  },
+  param2: (patchType) => {
+    // AM
+    switch (patchType) {
+      case "respace":
+        return { fixed: 64 }; // Near midpoint
+      case "poly":
+        return { fixed: 32 }; // Around a quarter
+      case "lead":
+        return { fixed: 64 }; // Near midpoint
+      case "pluck":
+        return { fixed: 85 }; // Up 2/3
+      default:
+        return { fixed: 64 }; // Default to midpoint
+    }
+  },
+  param3: (patchType) => {
+    // FM
+    switch (patchType) {
+      case "respace":
+        return { fixed: 127 }; // Cranked all the way up
+      case "poly":
+      case "lead":
+      case "pluck":
+        return { fixed: 64 }; // Near midpoint
+      default:
+        return { fixed: 64 }; // Default to midpoint
+    }
+  },
+  param4: (patchType) => {
+    // Detune
+    switch (patchType) {
+      case "respace":
+        return { fixed: 100 }; // Healthy dose
+      case "poly":
+        return { fixed: 32 }; // A touch
+      case "lead":
+      case "pluck":
+        return { fixed: 32 }; // A little bit
+      default:
+        return { fixed: 32 }; // Default to a little bit
+    }
+  },
+};
+
+const EPiano_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Tone
+    switch (patchType) {
+      case "base":
+        return { fixed: 64 }; // Midpoint
+      case "bendy_piano":
+        return { fixed: 80 }; // Slightly increased for brightness
+      case "pluck":
+        return { fixed: 80 }; // Boosted for saw-toothy pluck
+      case "lead":
+        return { fixed: 64 }; // Midpoint
+      default:
+        return { fixed: 64 }; // Default to midpoint
+    }
+  },
+  param2: (patchType) => {
+    // Texture
+    switch (patchType) {
+      case "base":
+        return { fixed: 48 }; // Slightly less than Tone
+      case "bendy_piano":
+        return { fixed: 32 }; // Around a quarter up
+      case "pluck":
+        return { fixed: 48 }; // Midpoint
+      case "lead":
+        return { fixed: 64 }; // Midpoint
+      default:
+        return { fixed: 48 }; // Default to midpoint
+    }
+  },
+  param3: (patchType) => {
+    // Punch
+    switch (patchType) {
+      case "base":
+        return { fixed: 42 }; // Around a third up
+      case "bendy_piano":
+        return { fixed: 42 }; // A little bit
+      case "pluck":
+        return { fixed: 42 }; // A little bit
+      case "lead":
+        return { fixed: 42 }; // A little bit
+      default:
+        return { fixed: 42 }; // Default to a third up
+    }
+  },
+  param4: (patchType) => {
+    // Tine
+    switch (patchType) {
+      case "base":
+        return { fixed: 64 }; // Halfway
+      case "pluck":
+        return { fixed: 127 }; // All the way up for plucky vibes
+      case "bendy_piano":
+        return { fixed: 64 }; // Halfway
+      case "lead":
+        return { fixed: 64 }; // Halfway
+      default:
+        return { fixed: 64 }; // Default to halfway
+    }
+  },
+};
+
+const Hardsync_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Freq
+    switch (patchType) {
+      case "stab":
+        return { fixed: 70 }; // Slightly increased frequency
+      case "jab":
+        return { fixed: 60 }; // Moderate frequency
+      case "bass":
+        return { fixed: 80 }; // Higher frequency for bass
+      default:
+        return { fixed: 64 }; // Default frequency
+    }
+  },
+  param2: (patchType) => {
+    // Sub
+    switch (patchType) {
+      case "bass":
+        return { fixed: 80 }; // Fatter for bass
+      case "stab":
+        return { fixed: 50 }; // Moderate sub for stabs
+      case "jab":
+        return { fixed: 60 }; // Slightly higher sub for jabs
+      default:
+        return { fixed: 40 }; // Lower sub for other types
+    }
+  },
+  param3: (patchType) => {
+    // Noise
+    switch (patchType) {
+      case "stab":
+        return { fixed: 60 }; // Adds noise for stabs
+      case "jab":
+        return { fixed: 50 }; // Moderate noise
+      case "bass":
+        return { fixed: 40 }; // Less noise for bass
+      default:
+        return { fixed: 40 }; // Default noise
+    }
+  },
+  param4: (patchType) => {
+    // Lowcut
+    switch (patchType) {
+      case "bass":
+        return { fixed: 50 }; // Moderate high-pass for bass
+      case "stab":
+        return { fixed: 40 }; // Slightly lower high-pass
+      case "jab":
+        return { fixed: 45 }; // Moderate high-pass
+      default:
+        return { fixed: 50 }; // Default high-pass
+    }
+  },
+};
+
+const Organ_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Type
+    switch (patchType) {
+      case "bass":
+        return { fixed: Math.floor(Math.random() * 8) }; // Random type between 0-7
+      case "pad":
+        return { fixed: Math.floor(Math.random() * 8) }; // Random type between 0-7
+      case "lead":
+        return { fixed: Math.floor(Math.random() * 8) }; // Random type between 0-7
+      default:
+        return { fixed: Math.floor(Math.random() * 8) }; // Default to random type
+    }
+  },
+  param2: (patchType, brightness) => {
+    // Bass
+    if (patchType === "bass") {
+      return { distribution: "linear", min: 0, max: 127, bias: 0.7 }; // More bass for bass patches
+    } else {
+      return { distribution: "linear", min: 0, max: 127, bias: 0.4 }; // Less bass for other patches
+    }
+  },
+  param3: (patchType, movement) => {
+    // Tremolo Amount
+    if (patchType === "pad" || patchType === "lead") {
+      return { distribution: "linear", min: 0, max: 127, bias: movement }; // Influenced by movement
+    } else {
+      return { fixed: 20 }; // Subtle tremolo for bass
+    }
+  },
+  param4: (patchType, movement) => {
+    // Tremolo Speed
+    if (patchType === "pad" || patchType === "lead") {
+      return { distribution: "linear", min: 0, max: 127, bias: movement }; // Influenced by movement
+    } else {
+      return { fixed: 40 }; // Moderate speed for bass
+    }
+  },
+};
+
+const Prism_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Shape
+    // Assuming Shape ranges from 0-127 with higher values being more complex
+    switch (patchType) {
+      case "bass":
+        return { fixed: 50 }; // Moderate shape for bass
+      case "lead":
+        return { fixed: 80 }; // More complex shape for leads
+      case "pad":
+        return { fixed: 60 }; // Slightly more complex for pads
+      default:
+        return { fixed: 50 }; // Default to moderate shape
+    }
+  },
+  param2: (patchType, brightness) => {
+    // Ratio
+    switch (patchType) {
+      case "bass":
+        return { distribution: "linear", min: 0.5, max: 2, bias: brightness }; // Wider ratios for bass
+      case "lead":
+        return { distribution: "linear", min: 0.7, max: 1.5, bias: brightness }; // Balanced ratios for leads
+      case "pad":
+        return { distribution: "linear", min: 1, max: 3, bias: brightness }; // Harmonic ratios for pads
+      default:
+        return { distribution: "linear", min: 0.5, max: 2, bias: brightness }; // Default ratios
+    }
+  },
+  param3: (patchType, brightness) => {
+    // Detune
+    if (patchType === "bass") {
+      return { fixed: 20 }; // Minimal detune for bass
+    } else if (patchType === "lead") {
+      return { fixed: 40 }; // Moderate detune for leads
+    } else if (patchType === "pad") {
+      return { fixed: 60 }; // More detune for pads
+    } else {
+      return { fixed: 30 }; // Default detune
+    }
+  },
+  param4: (patchType, spatialWidth) => {
+    // Stereo
+    return { distribution: "linear", min: 0, max: 127, bias: spatialWidth }; // Influenced by spatial width
+  },
+};
+
+const Simple_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Shape
+    switch (patchType) {
+      case "lead":
+      case "pluck":
+        return { fixed: Math.floor(Math.random() * 127) }; // Random shape for leads and plucks
+      case "pad":
+        return { fixed: Math.floor(Math.random() * 127) }; // Random shape for pads
+      default:
+        return { fixed: 64 }; // Default to midpoint shape
+    }
+  },
+  param2: (patchType, brightness) => {
+    // Pw (Pulse Width)
+    if (patchType === "pluck" || patchType === "lead") {
+      return { distribution: "linear", min: 30, max: 90, bias: brightness }; // Influenced by brightness
+    } else {
+      return { distribution: "linear", min: 20, max: 80, bias: 0.5 }; // Moderate pulse width for pads
+    }
+  },
+  param3: (patchType, character) => {
+    // Noise
+    if (patchType === "lead") {
+      return { distribution: "linear", min: 40, max: 100, bias: character }; // More noise for leads
+    } else if (patchType === "pluck") {
+      return { distribution: "linear", min: 30, max: 80, bias: character }; // Moderate noise for plucks
+    } else {
+      return { distribution: "linear", min: 20, max: 70, bias: 0.3 }; // Less noise for pads
+    }
+  },
+  param4: (patchType, spatialWidth) => {
+    // Stereo
+    return { distribution: "linear", min: 0, max: 127, bias: spatialWidth }; // Influenced by spatial width
+  },
+};
+
+const Wavetable_PARAMETER_WEIGHTS = {
+  param1: (patchType) => {
+    // Table
+    switch (patchType) {
+      case "lead":
+        return { fixed: Math.floor(Math.random() * 9) }; // Random table between 0-8 for leads
+      case "pluck":
+        return { fixed: Math.floor(Math.random() * 9) }; // Random table between 0-8 for plucks
+      case "pad":
+        return { fixed: Math.floor(Math.random() * 9) }; // Random table between 0-8 for pads
+      default:
+        return { fixed: Math.floor(Math.random() * 9) }; // Default to random table
+    }
+  },
+  param2: (patchType, brightness) => {
+    // Position
+    return { distribution: "linear", min: 0, max: 127, bias: brightness }; // Influenced by brightness
+  },
+  param3: (patchType, movement) => {
+    // Warp
+    if (patchType === "lead" || patchType === "pluck") {
+      return { distribution: "linear", min: 20, max: 100, bias: movement }; // More warp for active patches
+    } else {
+      return { distribution: "linear", min: 10, max: 80, bias: 0.4 }; // Moderate warp for pads
+    }
+  },
+  param4: (patchType, movement) => {
+    // Drift
+    if (patchType === "lead") {
+      return { distribution: "linear", min: 30, max: 110, bias: movement }; // More drift for leads
+    } else if (patchType === "pluck") {
+      return { distribution: "linear", min: 20, max: 90, bias: movement }; // Moderate drift for plucks
+    } else {
+      return { distribution: "linear", min: 10, max: 70, bias: 0.3 }; // Less drift for pads
+    }
+  },
+};
+
+// Helper function for weighted value generation
+function generateWeightedValue(weightConfig) {
+  if (weightConfig.fixed !== undefined) {
+    return weightConfig.fixed;
+  }
+
+  const { distribution, min, max, bias } = weightConfig;
+
+  switch (distribution) {
+    case "linear":
+      // Linearly bias the random value based on bias (0 to 1)
+      return Math.floor(min + (max - min) * bias * Math.random());
+    default:
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+}
+
 const PARAMETER_DEFINITIONS = {
   trackVolume: { cc: 7, defaultValue: 99 },
-  trackMute: { cc: 9, defaultValue: 0 }, // TODO less useful, and if we use it we need to flip between 0/1
+  trackMute: { cc: 9, defaultValue: 0 },
   trackPan: { cc: 10, defaultValue: 64 },
   param1: { cc: 12, defaultValue: 50 },
   param2: { cc: 13, defaultValue: 50 },
@@ -14,7 +420,7 @@ const PARAMETER_DEFINITIONS = {
   filterDecay: { cc: 25, defaultValue: 64 },
   filterSustain: { cc: 26, defaultValue: 64 },
   filterRelease: { cc: 27, defaultValue: 64 },
-  polyMonoLegator: { cc: 28, defaultValue: 64 }, // TODO need to clarify the zones you're settin; gpoly 0-42; mono 43-83; legator 84-
+  polyMonoLegator: { cc: 28, defaultValue: 64 },
   portamento: { cc: 29, defaultValue: 64 },
   pitchBendAmount: { cc: 30, defaultValue: 64 },
   engineVolume: { cc: 31, defaultValue: 99 },
@@ -22,12 +428,8 @@ const PARAMETER_DEFINITIONS = {
   resonance: { cc: 33, defaultValue: 64 },
   envAmount: { cc: 34, defaultValue: 64 },
   keyTracking: { cc: 35, defaultValue: 64 },
-  // sendToExt: { cc: 36, defaultValue: 0 },
-  // sendToTape: { cc: 37, defaultValue: 0 },
   sendToFX1: { cc: 38, defaultValue: 0 },
   sendToFX2: { cc: 39, defaultValue: 0 },
-  // lfoShape: { cc: 40, defaultValue: 0 }, // not working right now since we can't control source or amount
-  // lfoOnsetDest: { cc: 41, defaultValue: 0 },
 };
 
 const MIDI_CCS = Object.fromEntries(
@@ -36,8 +438,6 @@ const MIDI_CCS = Object.fromEntries(
     value.cc,
   ])
 );
-
-// Add this after your PARAMETER_DEFINITIONS and before the EventEmitter class
 
 function generatePatch({
   patchType = "lead",
@@ -75,31 +475,21 @@ function generatePatch({
     engine = engines[Math.floor(Math.random() * engines.length)];
   }
 
-  // Constrain the selected engine when random to one of the selects for synth to track mapps in @patch_generator.html
-  if (
-    engine === "Axis" ||
-    engine === "Dissolve" ||
-    engine === "E-Piano" ||
-    engine === "HardSync" ||
-    engine === "Organ" ||
-    engine === "Prism" ||
-    engine === "Simple" ||
-    engine === "Wavetable"
-  ) {
-    engine = engine;
-  } else {
-    console.warn(
-      `Invalid engine "${engine}", falling back to random selection`
-    );
-    engine = engines[Math.floor(Math.random() * engines.length)];
-  }
-
   // ---------------------
   // 2) CHANNEL, VOLUME, PAN
   // ---------------------
   let volume = 80 + Math.floor(Math.random() * 48);
   if (patchType === "bass") volume = Math.max(volume - 15, 0);
   const pan = Math.floor(spatialWidth * 127);
+
+  const trackSelects = document.querySelectorAll('[id^="track"]');
+  const selectedTrack = Array.from(trackSelects).find(
+    (track) => track.value === engine
+  );
+  const trackNumber = selectedTrack
+    ? parseInt(selectedTrack.id.replace("track", "")) - 1
+    : 0;
+  const channel_for_engine = trackNumber + 1;
 
   // ---------------------
   // 3) AMP ENVELOPE
@@ -154,53 +544,87 @@ function generatePatch({
   const filterRelease = ampRelease + Math.floor(Math.random() * 20);
 
   // ---------------------
-  // 5) ENGINE PARAMS
+  // 5) ENGINE PARAMS (Weighted Approach)
   // ---------------------
-  // param1: "Grit/Texture"
-  const param1 = Math.floor(
-    character * 70 +
-      complexity * 30 +
-      (patchType === "fx" ? 20 : 0) +
-      Math.random() * 15
-  );
+  let engineParams = {};
 
-  // param2: "Harmonic Brightness"
-  const param2 = Math.floor(
-    brightness * 80 +
-      complexity * 20 +
-      (patchType === "lead" ? 15 : 0) +
-      Math.random() * 10
-  );
-
-  // param3: "Movement/Mod Factor"
-  const param3 = Math.floor(
-    movement * 70 +
-      resonance * 40 +
-      (movement > 0.7 && spatialWidth > 0.5 ? 20 : 0) +
-      Math.random() * 10
-  );
-
-  // param4: "Stereo/Space"
-  const param4 = Math.floor(
-    spatialWidth * 80 +
-      brightness * 20 +
-      (patchType === "pad" ? 15 : 0) +
-      Math.random() * 15
-  );
+  if (engine === "Axis") {
+    const paramWeights = AXIS_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(
+      paramWeights.param1(brightness, patchType)
+    ); // Tone
+    engineParams.param2 = generateWeightedValue(paramWeights.param2(patchType)); // Ratio
+    engineParams.param3 = generateWeightedValue(paramWeights.param3(patchType)); // Shape
+    engineParams.param4 = generateWeightedValue(
+      paramWeights.param4(movement, patchType)
+    ); // Tremolo
+  } else if (engine === "Dissolve") {
+    const paramWeights = DISSOLVE_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(paramWeights.param1(patchType)); // Swarm
+    engineParams.param2 = generateWeightedValue(paramWeights.param2(patchType)); // AM
+    engineParams.param3 = generateWeightedValue(paramWeights.param3(patchType)); // FM
+    engineParams.param4 = generateWeightedValue(paramWeights.param4(patchType)); // Detune
+  } else if (engine === "Epiano" || engine === "E-Piano") {
+    const paramWeights = EPiano_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(paramWeights.param1(patchType)); // Tone
+    engineParams.param2 = generateWeightedValue(paramWeights.param2(patchType)); // Texture
+    engineParams.param3 = generateWeightedValue(paramWeights.param3(patchType)); // Punch
+    engineParams.param4 = generateWeightedValue(paramWeights.param4(patchType)); // Tine
+  } else if (engine === "Hardsync" || engine === "HardSync") {
+    const paramWeights = Hardsync_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(paramWeights.param1(patchType)); // Freq
+    engineParams.param2 = generateWeightedValue(paramWeights.param2(patchType)); // Sub
+    engineParams.param3 = generateWeightedValue(paramWeights.param3(patchType)); // Noise
+    engineParams.param4 = generateWeightedValue(paramWeights.param4(patchType)); // Lowcut
+  } else if (engine === "Organ") {
+    const paramWeights = Organ_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(paramWeights.param1(patchType)); // Type
+    engineParams.param2 = generateWeightedValue(
+      paramWeights.param2(patchType, brightness)
+    ); // Bass
+    engineParams.param3 = generateWeightedValue(
+      paramWeights.param3(patchType, movement)
+    ); // Tremolo Amount
+    engineParams.param4 = generateWeightedValue(
+      paramWeights.param4(patchType, movement)
+    ); // Tremolo Speed
+  } else if (engine === "Prism") {
+    const paramWeights = Prism_PARAMETER_WEIGHTS;
+    engineParams.param1 = generateWeightedValue(paramWeights.param1(patchType)); // Shape
+    engineParams.param2 = generateWeightedValue(
+      paramWeights.param2(patchType, brightness)
+    ); // Ratio
+    engineParams.param3 = generateWeightedValue(
+      paramWeights.param3(patchType, brightness)
+    ); // Detune
+    engineParams.param4 = generateWeightedValue(
+      paramWeights.param4(patchType, spatialWidth)
+    ); // Stereo
+  } else {
+    // Placeholder for other engines
+    console.warn(
+      `Engine-specific parameter mapping for "${engine}" is not implemented yet.`
+    );
+    // Assign default or random values as needed
+    engineParams.param1 = PARAMETER_DEFINITIONS.param1.defaultValue;
+    engineParams.param2 = PARAMETER_DEFINITIONS.param2.defaultValue;
+    engineParams.param3 = PARAMETER_DEFINITIONS.param3.defaultValue;
+    engineParams.param4 = PARAMETER_DEFINITIONS.param4.defaultValue;
+  }
 
   // ---------------------
   // 6) PATTERN
   // ---------------------
-  const patternLength = 16; // 4 bars per octave, 4 octaves
+  const patternLength = 16;
   const patternRes = 16;
   const notes = [];
   let octaves;
   if (patchType === "bass") {
-    octaves = ["2", "3", "4"]; // Lower octaves for bass
+    octaves = ["2", "3", "4"];
   } else {
-    octaves = ["2", "3", "4", "5", "6"]; // Full spectrum for other types
+    octaves = ["2", "3", "4", "5", "6"];
   }
-  const noteCount = complexity > 0.7 ? 4 : 2; // Notes per octave
+  const noteCount = complexity > 0.7 ? 4 : 2;
 
   for (let octaveIndex = 0; octaveIndex < octaves.length; octaveIndex++) {
     for (let i = 0; i < noteCount; i++) {
@@ -220,7 +644,6 @@ function generatePatch({
       ];
       const randomPitch = pitches[Math.floor(Math.random() * pitches.length)];
 
-      // Adjust note duration based on patch type
       let duration;
       switch (patchType) {
         case "pad":
@@ -236,14 +659,16 @@ function generatePatch({
           duration = 0.5 + Math.random();
       }
 
-      const startBeat = Math.floor(Math.random() * 4) + octaveIndex * 4; // Adjust start beat for each octave
-      const trackSelects = document.querySelectorAll('[id^="track"]');
+      const startBeat = Math.floor(Math.random() * 4) + octaveIndex * 4;
+      // const trackSelects = document.querySelectorAll('[id^="track"]');
 
-      const selectedTrack = Array.from(trackSelects).find(
-        (track) => track.value === engine
-      );
-      const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
-      channel_for_engine = trackNumber + 1; // save the channel number
+      // const selectedTrack = Array.from(trackSelects).find(
+      //   (track) => track.value === engine
+      // );
+      // const trackNumber = selectedTrack
+      //   ? parseInt(selectedTrack.id.replace("track", "")) - 1
+      //   : 0;
+      // const channel_for_engine = trackNumber + 1;
       notes.push({
         pitch: randomPitch,
         start: startBeat,
@@ -254,11 +679,10 @@ function generatePatch({
   }
 
   // ---------------------
-  // 8) AUTOMATION
+  // 7) AUTOMATION
   // ---------------------
   const automations = [];
   {
-    // All possible targets we can automate
     const possibleTargets = [
       "trackVolume",
       "trackMute",
@@ -287,11 +711,6 @@ function generatePatch({
       "engineVolume",
     ];
 
-    // We'll build a weighted list based on the patch generation parameters,
-    // so we pick a parameter that best fits the current patch "vibe".
-    // For example:
-    // - If movement is high, we might emphasize parameters that produce big sweeps (filterCutoff, resonance, etc.).
-    // - If patchType is "fx", maybe we favor sendToTape/sendToFX.
     const weightedTargets = [];
 
     function addWeighted(target, weight) {
@@ -300,12 +719,9 @@ function generatePatch({
       }
     }
 
-    // Go through each possible target, assign some base weight, then boost
-    // if it makes sense given patch params.
     possibleTargets.forEach((target) => {
-      let weight = 1; // base
+      let weight = 1;
 
-      // Example synergy: high movement => more likely to automate filter or resonance
       if (
         movement > 0.6 &&
         [
@@ -315,13 +731,12 @@ function generatePatch({
           "param1",
           "param2",
           "param3",
-          "pram4",
+          "param4",
         ].includes(target)
       ) {
         weight += 3;
       }
 
-      // If patchType is "fx", maybe prioritize sends or "trackPan"
       if (
         patchType === "fx" &&
         (target === "sendToFX1" || target === "sendToFX2")
@@ -329,7 +744,6 @@ function generatePatch({
         weight += 3;
       }
 
-      // If brightness is high, automating filterCutoff or envAmount might be nice
       if (
         brightness > 0.6 &&
         (target === "filterCutoff" || target === "envAmount")
@@ -337,52 +751,42 @@ function generatePatch({
         weight += 2;
       }
 
-      // If patchType is "bass", maybe prefer automating "trackVolume" or "synth_param4" (just as an example)
       if (
         patchType === "bass" &&
-        (target === "trackVolume" || target === "synth_param4")
+        (target === "trackVolume" || target === "param4")
       ) {
         weight += 2;
       }
 
-      // etc. (You can add more rules for complexity, character, etc.)
-
       addWeighted(target, weight);
     });
 
-    // If for some reason all weighting ended up minimal, just ensure we have at least some
-    // fallback (we already set a base weight=1, so it should be fine).
-
-    // Randomly choose between 2-4 automations
-    const numAutomations = Math.floor(Math.random() * 3) + 2; // Random number between 2-4
-
-    // Keep track of chosen targets to avoid duplicates
+    const numAutomations = Math.floor(Math.random() * 3) + 2;
     const chosenTargets = new Set();
 
-    // Create multiple automations
     for (let i = 0; i < numAutomations; i++) {
-      // Keep trying until we find an unused target
       let chosenTarget;
       do {
         chosenTarget =
           weightedTargets[Math.floor(Math.random() * weightedTargets.length)];
-      } while (chosenTargets.has(chosenTarget));
+      } while (
+        chosenTargets.has(chosenTarget) &&
+        weightedTargets.length > chosenTargets.size
+      );
+
+      if (chosenTargets.has(chosenTarget)) {
+        break;
+      }
 
       chosenTargets.add(chosenTarget);
 
-      // We'll choose startValue and endValue using movement to shape the range:
-      // higher movement => more dramatic changes
-      const spread = Math.floor(20 + movement * 64); // e.g. up to about 84 if movement=1
+      const spread = Math.floor(20 + movement * 64);
       const startVal = Math.floor(Math.random() * (128 - spread));
-      const endVal = startVal + spread;
+      const endVal = Math.min(startVal + spread, 127);
 
-      // Duration in beats: from 4..(12 or so) if movement is big
-      // Vary the duration slightly for each automation to create more interesting patterns
       const baseDuration = Math.floor(4 + movement * 8);
-      const duration = baseDuration + Math.floor(Math.random() * 4) - 2; // +/- 2 beats
-
-      // Vary the start beat for each automation
-      const startBeat = Math.floor(Math.random() * 4); // Start within first 4 beats
+      const duration = baseDuration + Math.floor(Math.random() * 4) - 2;
+      const startBeat = Math.floor(Math.random() * 4);
 
       automations.push({
         target: chosenTarget,
@@ -395,7 +799,7 @@ function generatePatch({
   }
 
   // ---------------------
-  // 9) FX GENERATION
+  // 8) FX GENERATION
   // ---------------------
   const fxOptions = [
     {
@@ -479,43 +883,6 @@ function generatePatch({
         };
       },
     },
-    {
-      type: "Lofi",
-      recommendedFor: ["bass", "fx", "lead"],
-      synergy: {
-        character: 0.5,
-      },
-      paramAssignment: (vars) => {
-        const { character, brightness } = vars;
-        return {
-          Rate: Math.floor(20 + character * 100),
-          Bits: Math.floor(character * 80 + Math.random() * 20),
-          Quality: Math.floor((1 - brightness) * 50 + character * 20),
-          Drift: Math.floor(brightness * 70),
-          recommendedWet: Math.floor(60 + character * 40 - brightness * 30),
-        };
-      },
-    },
-    {
-      type: "Phaser",
-      recommendedFor: ["pad", "lead", "fx"],
-      synergy: {
-        brightness: 0.4,
-        movement: 0.3,
-      },
-      paramAssignment: (vars) => {
-        const { brightness, movement, patchType } = vars;
-        let baseSize = patchType === "pad" ? 80 : 40;
-        let dry = Math.floor(50 + (brightness - 0.5) * 20 + Math.random() * 20);
-        dry = Math.max(0, Math.min(127, dry));
-        return {
-          Frequency: Math.floor(baseSize + movement * 40),
-          Depth: Math.floor(movement * 80),
-          Rate: Math.floor(30 + brightness * 70),
-          Feedback: Math.floor(dry),
-        };
-      },
-    },
   ];
 
   // Weight and select FX
@@ -573,22 +940,20 @@ function generatePatch({
     };
   });
 
-  // Update the "About this patch" section in the HTML
+  // ---------------------
+  // 9) UPDATE THE "ABOUT THIS PATCH" SECTION
+  // ---------------------
   const patchDetails = document.getElementById("patch-details-list");
   patchDetails.innerHTML = "";
+
   const engineDetail = document.createElement("li");
   engineDetail.textContent = `Engine: ${engine}`;
   patchDetails.appendChild(engineDetail);
 
   const channelDetail = document.createElement("li");
-  const trackSelects = document.querySelectorAll('[id^="track"]');
-  const selectedTrack = Array.from(trackSelects).find(
-    (track) => track.value === engine
-  );
-  const trackNumber = parseInt(selectedTrack.id.replace("track", "")) - 1; // subtract 1 to fix base 0
-  const assignedChannel = trackNumber + 1; // save the channel number
-  channelDetail.textContent = `Channel: ${assignedChannel}`;
+  channelDetail.textContent = `Channel: ${channel_for_engine}`;
   patchDetails.appendChild(channelDetail);
+
   const fxDetails = chosenFx.map((fx, index) => {
     const detail = document.createElement("li");
     detail.textContent = `FX${index + 1}: ${fx.type}`;
@@ -606,10 +971,145 @@ function generatePatch({
     });
   }
 
+  // Add engine-specific parameters to the patch details
+  if (engineParams && Object.keys(engineParams).length > 0) {
+    const engineParamsList = document.createElement("ul");
+    for (const [param, value] of Object.entries(engineParams)) {
+      let paramName = `param${param.slice(-1)}`;
+      // Map param1-param4 to meaningful names for display based on engine
+      if (engine === "Axis") {
+        switch (param) {
+          case "param1":
+            paramName = "Tone";
+            break;
+          case "param2":
+            paramName = "Ratio";
+            break;
+          case "param3":
+            paramName = "Shape";
+            break;
+          case "param4":
+            paramName = "Tremolo";
+            break;
+        }
+      } else if (engine === "Dissolve") {
+        switch (param) {
+          case "param1":
+            paramName = "Swarm";
+            break;
+          case "param2":
+            paramName = "AM";
+            break;
+          case "param3":
+            paramName = "FM";
+            break;
+          case "param4":
+            paramName = "Detune";
+            break;
+        }
+      } else if (engine === "Epiano" || engine === "E-Piano") {
+        switch (param) {
+          case "param1":
+            paramName = "Tone";
+            break;
+          case "param2":
+            paramName = "Texture";
+            break;
+          case "param3":
+            paramName = "Punch";
+            break;
+          case "param4":
+            paramName = "Tine";
+            break;
+        }
+      } else if (engine === "Hardsync" || engine === "HardSync") {
+        switch (param) {
+          case "param1":
+            paramName = "Freq";
+            break;
+          case "param2":
+            paramName = "Sub";
+            break;
+          case "param3":
+            paramName = "Noise";
+            break;
+          case "param4":
+            paramName = "Lowcut";
+            break;
+        }
+      } else if (engine === "Organ") {
+        switch (param) {
+          case "param1":
+            paramName = "Type";
+            break;
+          case "param2":
+            paramName = "Bass";
+            break;
+          case "param3":
+            paramName = "Tremolo Amount";
+            break;
+          case "param4":
+            paramName = "Tremolo Speed";
+            break;
+        }
+      } else if (engine === "Prism") {
+        switch (param) {
+          case "param1":
+            paramName = "Shape";
+            break;
+          case "param2":
+            paramName = "Ratio";
+            break;
+          case "param3":
+            paramName = "Detune";
+            break;
+          case "param4":
+            paramName = "Stereo";
+            break;
+        }
+      } else if (engine === "Simple") {
+        switch (param) {
+          case "param1":
+            paramName = "Shape";
+            break;
+          case "param2":
+            paramName = "Pw";
+            break;
+          case "param3":
+            paramName = "Noise";
+            break;
+          case "param4":
+            paramName = "Stereo";
+            break;
+        }
+      } else if (engine === "Wavetable") {
+        switch (param) {
+          case "param1":
+            paramName = "Table";
+            break;
+          case "param2":
+            paramName = "Position";
+            break;
+          case "param3":
+            paramName = "Warp";
+            break;
+          case "param4":
+            paramName = "Drift";
+            break;
+        }
+      }
+
+      const paramDetail = document.createElement("li");
+      paramDetail.textContent = `${paramName}: ${value}`;
+      engineParamsList.appendChild(paramDetail);
+    }
+    patchDetails.appendChild(engineParamsList);
+  }
+
   // ---------------------
   // 10) RETURN COMPLETE PATCH
   // ---------------------
-  return {
+  const patch = {
     engine,
     channel: channel_for_engine,
     volume,
@@ -632,10 +1132,10 @@ function generatePatch({
         release: filterRelease,
       },
     },
-    param1,
-    param2,
-    param3,
-    param4,
+    param1: engineParams.param1,
+    param2: engineParams.param2,
+    param3: engineParams.param3,
+    param4: engineParams.param4,
     pattern: {
       length: patternLength,
       resolution: patternRes,
@@ -643,5 +1143,8 @@ function generatePatch({
     },
     automations,
     fx,
+    engineParams,
   };
+
+  return patch;
 }

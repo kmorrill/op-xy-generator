@@ -141,6 +141,9 @@ class Track extends EventEmitter {
     }
 
     // Emit the parameterChange event, passing the info needed to send CC
+    console.log(
+      `Emitting parameterChange event: ccNumber=${ccNumber}, value=${value}, channel=${this.channel}`
+    );
     this.emit("parameterChange", {
       ccNumber,
       value,
@@ -459,6 +462,7 @@ class OPXY extends EventEmitter {
 
     function updateTrackParams(track, params) {
       for (const [key, value] of Object.entries(params)) {
+        console.log(`Setting ${key} to ${value}`); // Added for debugging
         track.setParameter(key, value);
       }
     }
