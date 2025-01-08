@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "melody-send-channel": MIDI_CHANNELS.melody,
       "chord-send-channel": MIDI_CHANNELS.chords,
       "response-send-channel": MIDI_CHANNELS.callResponse,
+      "drones-send-channel": MIDI_CHANNELS.drones,
+      "chord-extensions-send-channel": MIDI_CHANNELS.chordExtensions,
     };
     const channelId = select.id;
     for (let i = 1; i <= 16; i++) {
@@ -37,10 +39,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Example: Call renderAllVisualizations after generating tracks
 function regenerateTracks() {
-  generationState.tracks.drums = generateDrumPattern();
-  generationState.tracks.bass = generateBassLine();
-  generationState.tracks.chords = generateChords(generationState);
-  generationState.tracks.melody = generateMelody(generationState);
+  if (!document.getElementById("drum-lock").checked) {
+    generationState.tracks.drums = generateDrumPattern();
+  }
+  if (!document.getElementById("bass-lock").checked) {
+    generationState.tracks.bass = generateBassLine();
+  }
+  if (!document.getElementById("chord-lock").checked) {
+    generationState.tracks.chords = generateChords(generationState);
+  }
+  if (!document.getElementById("melody-lock").checked) {
+    generationState.tracks.melody = generateMelody(generationState);
+  }
   renderAllVisualizations();
 }
 

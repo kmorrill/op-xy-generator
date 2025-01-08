@@ -44,9 +44,13 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
 
-      .config-section h2,
+      .config-section h2 {
+        margin-top: 0px;
+      }
       .config-section h4 {
-        margin-top: 0;
+        margin-top: 40px;
+        font-size: 12pt;
+        margin-bottom: 0px;
       }
 
       /* New: Flex Container for Genre and Key/Scale */
@@ -722,6 +726,25 @@
                     max="100"
                   />
                 </td>
+              <tr>
+                <td><label for="chord-send-channel">Send to Channel:</label></td>
+                <td>
+                  <select
+                    id="chord-send-channel"
+                    class="input-dropdown"
+                  ></select>
+                </td>
+              </tr>
+                <td><label for="chord-mute">Mute:</label></td>
+                <td>
+                  <input type="checkbox" id="chord-mute" class="checkbox" />
+                </td>
+              </tr>
+              <tr>
+                <td><label for="chord-lock">Lock:</label></td>
+                <td>
+                  <input type="checkbox" id="chord-lock" class="checkbox" />
+                </td>
               </tr>
             </table>
             <h4>Augment Settings</h4>
@@ -735,6 +758,26 @@
                     class="checkbox knob"
                   />
                 </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="drones-send-channel">Drones Channel:</label>
+                </td>
+                <td>
+                  <select
+                    id="drones-send-channel"
+                    class="input-dropdown"
+                  ></select>
+                </td>
+              </tr>
+              <tr>
+                <td><label for="drones-mute">Drone Mute:</label></td>
+                <td>
+                  <input type="checkbox" id="drones-mute" class="checkbox" />
+                </td>
+              </tr>
+              <tr>
+                <td><hr /></td>
               </tr>
               <tr>
                 <td>
@@ -752,25 +795,19 @@
               </tr>
               <tr>
                 <td>
-                  <label for="chord-send-channel">Send to Channel:</label>
+                  <label for="chord-extensions-send-channel">Extensions Channel:</label>
                 </td>
                 <td>
                   <select
-                    id="chord-send-channel"
+                    id="chord-extensions-send-channel"
                     class="input-dropdown"
                   ></select>
                 </td>
               </tr>
               <tr>
-                <td><label for="chord-mute">Mute:</label></td>
+                <td><label for="chord-extensions-mute">Extensions Mute:</label></td>
                 <td>
-                  <input type="checkbox" id="chord-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
-                <td><label for="chord-lock">Lock:</label></td>
-                <td>
-                  <input type="checkbox" id="chord-lock" class="checkbox" />
+                  <input type="checkbox" id="chord-extensions-mute" class="checkbox" />
                 </td>
               </tr>
             </table>
@@ -1100,12 +1137,6 @@
               <td><label for="response-mute">Mute:</label></td>
               <td>
                 <input type="checkbox" id="response-mute" class="checkbox" />
-              </td>
-            </tr>
-            <tr>
-              <td><label for="response-lock">Lock:</label></td>
-              <td>
-                <input type="checkbox" id="response-lock" class="checkbox" />
               </td>
             </tr>
           </table>

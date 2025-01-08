@@ -34,10 +34,27 @@ function playGeneratedNotes(step) {
   Object.keys(generationState.tracks).forEach((trackName) => {
     const track = generationState.tracks[trackName];
     track.forEach((note) => {
-      const channel = note.channel || MIDI_CHANNELS[trackName];
-      if (note.start === step) {
+      // Grab channel and mute status from UI
+      const elementLookup = {
+        drums: "drum",
+        bass: "bass",
+        melody: "melody",
+        chords: "chord",
+        "chord-extensions": "chord-extensions",
+        drones: "drones",
+        callresponse: "response",
+      };
+
+      const prefix = elementLookup[trackName];
+
+      const channel = document.getElementById(`${prefix}-send-channel`).value;
+      const muteStatus = document.getElementById(`${prefix}-mute`).checked;
+
+      if (note.start === step && !muteStatus) {
         sendMidiNoteOn(channel, note.note, note.velocity, midiOutput);
       }
+
+      // BUG TODO if you change channel while the note is on, off will be sent to the new channel
       if (note.end === step) {
         sendMidiNoteOff(channel, note.note, midiOutput);
       }

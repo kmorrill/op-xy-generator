@@ -129,7 +129,7 @@ function generateChords() {
               velocity: 80,
               start: startStep,
               end: startStep + duration,
-              channel: EXTENSIONS_CHANNEL,
+              channel: document.getElementById("chord-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
             });
           });
         }
@@ -149,7 +149,7 @@ function generateChords() {
       velocity: 64,
       start: 1,
       end: Infinity, // Play forever
-      channel: DRONE_CHANNEL,
+      channel: document.getElementById("drones-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
     });
   }
 
