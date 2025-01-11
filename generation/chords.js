@@ -118,6 +118,7 @@ function generateChords() {
             start: startStep,
             end: startStep + duration,
             channel: CHORD_CHANNEL,
+            type: "main", // Metadata indicating it's a main chord tone
           });
         });
 
@@ -130,6 +131,7 @@ function generateChords() {
               start: startStep,
               end: startStep + duration,
               channel: document.getElementById("chord-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
+              type: "extension", // Metadata indicating it's an extension
             });
           });
         }
@@ -150,6 +152,7 @@ function generateChords() {
       start: 1,
       end: Infinity, // Play forever
       channel: document.getElementById("drones-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
+      type: "drone", // Metadata indicating it's a drone
     });
   }
 

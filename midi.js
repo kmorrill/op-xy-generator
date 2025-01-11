@@ -47,7 +47,14 @@ function playGeneratedNotes(step) {
 
       const prefix = elementLookup[trackName];
 
-      const channel = document.getElementById(`${prefix}-send-channel`).value;
+      const channel =
+        note.type === "extension"
+          ? document.getElementById(`chord-extensions-send-channel`).value
+          : note.type === "drone"
+          ? document.getElementById(`drones-send-channel`).value
+          : note.type === "main"
+          ? document.getElementById(`${prefix}-send-channel`).value
+          : document.getElementById(`${prefix}-send-channel`).value;
       const muteStatus = document.getElementById(`${prefix}-mute`).checked;
 
       if (note.start === step && !muteStatus) {
