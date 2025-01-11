@@ -27,6 +27,10 @@
     <label for="midiValue">Value:</label>
     <input type="range" id="midiValue" min="0" max="127" value="64" />
 
+    <label for="customValue">Custom Value:</label>
+    <input type="number" id="customValue" min="0" max="127" value="64" />
+    <button id="sendCustomValue">Send Custom Value</button>
+
     <script>
       let midiOutput = null;
 
@@ -68,6 +72,24 @@
         );
       }
 
+      function sendCustomValue() {
+        if (!midiOutput) {
+          console.warn("No MIDI output available.");
+          return;
+        }
+
+        const cc = parseInt(midiCCSelect.value, 10);
+        const channel = parseInt(midiChannelSelect.value, 10);
+        const customValue = parseInt(customValueInput.value, 10);
+
+        // Send MIDI CC message (0xB0 is Control Change)
+        const message = [0xb0 | (channel - 1), cc, customValue];
+        midiOutput.send(message);
+        console.log(
+          `Sent MIDI CC: ${cc} on Channel: ${channel} with Custom Value: ${customValue}`
+        );
+      }
+
       // Populate MIDI CC options (0-90)
       const midiCCSelect = document.getElementById("midiCC");
       for (let i = 0; i <= 120; i++) {
@@ -88,11 +110,15 @@
 
       // Get slider value and send MIDI message on input changes
       const midiValueSlider = document.getElementById("midiValue");
+      const customValueInput = document.getElementById("customValue");
 
       // Add event listeners
       midiCCSelect.addEventListener("change", sendMIDIMessage);
       midiChannelSelect.addEventListener("change", sendMIDIMessage);
       midiValueSlider.addEventListener("input", sendMIDIMessage);
+      document
+        .getElementById("sendCustomValue")
+        .addEventListener("click", sendCustomValue);
 
       // Initialize MIDI on page load
       initializeMIDI();
