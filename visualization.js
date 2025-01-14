@@ -104,6 +104,43 @@ function renderTrackVisualization(trackName) {
       return;
     }
 
+    // Initialize the table rows with empty cells if needed
+    const rows = tbody.querySelectorAll("tr");
+    rows.forEach((row) => {
+      // Skip the first cell (label cell)
+      const cellCount = row.cells.length - 1;
+      // Add empty cells until we have 32 beats (plus the label cell)
+      for (let i = cellCount; i < 32; i++) {
+        const cell = document.createElement("td");
+        row.appendChild(cell);
+      }
+    });
+
+    // Ensure header row is correct
+    const thead = table.querySelector("thead");
+    if (thead) {
+      let headerRow = thead.querySelector("tr");
+      if (!headerRow) {
+        headerRow = document.createElement("tr");
+        thead.appendChild(headerRow);
+      }
+
+      // Clear existing header cells
+      headerRow.innerHTML = "";
+
+      // Add Hit Type header
+      const hitTypeHeader = document.createElement("th");
+      hitTypeHeader.textContent = "Hit Type";
+      headerRow.appendChild(hitTypeHeader);
+
+      // Add beat numbers 1-32
+      for (let i = 1; i <= 32; i++) {
+        const th = document.createElement("th");
+        th.textContent = i.toString();
+        headerRow.appendChild(th);
+      }
+    }
+
     // Clear previous 'hit' classes and innerHTML
     let hitCells = tbody.querySelectorAll("td.hit");
     hitCells.forEach((cell) => {
@@ -189,6 +226,31 @@ function renderTrackVisualization(trackName) {
     if (!table) {
       console.error(`Table for ${trackName} not found.`);
       return;
+    }
+
+    // Initialize header row
+    const thead = table.querySelector("thead");
+    if (thead) {
+      let headerRow = thead.querySelector("tr");
+      if (!headerRow) {
+        headerRow = document.createElement("tr");
+        thead.appendChild(headerRow);
+      }
+
+      // Clear existing header cells
+      headerRow.innerHTML = "";
+
+      // Add Note header
+      const noteHeader = document.createElement("th");
+      noteHeader.textContent = "Note";
+      headerRow.appendChild(noteHeader);
+
+      // Add beat numbers 1-32
+      for (let i = 1; i <= 32; i++) {
+        const th = document.createElement("th");
+        th.textContent = i.toString();
+        headerRow.appendChild(th);
+      }
     }
 
     const tbody = table.querySelector("tbody");
