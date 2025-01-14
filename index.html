@@ -180,6 +180,10 @@
       select {
         font-size: 14pt;
       }
+
+      #track-controls tr td:first-child label {
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
@@ -231,6 +235,63 @@
             <option value="mixolydian">Mixolydian</option>
             <option value="lydian">Lydian</option>
           </select>
+        </section>
+
+        <!-- Track Controls -->
+        <section id="track-controls" class="config-section">
+          <h2>Track Controls</h2>
+          <table>
+            <tr>
+              <td><label>Drums:</label></td>
+              <td>
+                <label for="drum-mute">Mute</label>
+                <input type="checkbox" id="drum-mute" class="checkbox" />
+                <label for="drum-lock">Lock</label>
+                <input type="checkbox" id="drum-lock" class="checkbox" />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Bass:</label></td>
+              <td>
+                <label for="bass-mute">Mute</label>
+                <input type="checkbox" id="bass-mute" class="checkbox" />
+                <label for="bass-lock">Lock</label>
+                <input type="checkbox" id="bass-lock" class="checkbox" />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Chords:</label></td>
+              <td>
+                <label for="chord-mute">Mute</label>
+                <input type="checkbox" id="chord-mute" class="checkbox" />
+                <label for="chord-lock">Lock</label>
+                <input type="checkbox" id="chord-lock" class="checkbox" />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Drone:</label></td>
+              <td>
+                <label for="drone-mute">Mute</label>
+                <input type="checkbox" id="drone-mute" class="checkbox" />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Melody:</label></td>
+              <td>
+                <label for="melody-mute">Mute</label>
+                <input type="checkbox" id="melody-mute" class="checkbox" />
+                <label for="melody-lock">Lock</label>
+                <input type="checkbox" id="melody-lock" class="checkbox" />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Response:</label></td>
+              <td>
+                <label for="response-mute">Mute</label>
+                <input type="checkbox" id="response-mute" class="checkbox" />
+              </td>
+            </tr>
+          </table>
         </section>
       </div>
 
@@ -313,18 +374,6 @@
                   ></select>
                 </td>
               </tr>
-              <tr>
-                <td><label for="drum-mute">Mute:</label></td>
-                <td>
-                  <input type="checkbox" id="drum-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
-                <td><label for="drum-lock">Lock:</label></td>
-                <td>
-                  <input type="checkbox" id="drum-lock" class="checkbox" />
-                </td>
-              </tr>
             </table>
           </div>
           <div class="sequence">
@@ -341,11 +390,9 @@
                 </tr>
                 <tr>
                   <td style="white-space: nowrap">Snare</td>
-
                 </tr>
                 <tr>
                   <td style="white-space: nowrap">Hi-Hat</td>
-
                 </tr>
                 <tr>
                   <td style="white-space: nowrap">Other</td>
@@ -429,18 +476,6 @@
                     id="bass-send-channel"
                     class="input-dropdown"
                   ></select>
-                </td>
-              </tr>
-              <tr>
-                <td><label for="bass-mute">Mute:</label></td>
-                <td>
-                  <input type="checkbox" id="bass-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
-                <td><label for="bass-lock">Lock:</label></td>
-                <td>
-                  <input type="checkbox" id="bass-lock" class="checkbox" />
                 </td>
               </tr>
             </table>
@@ -528,24 +563,17 @@
                     max="100"
                   />
                 </td>
+              </tr>
+
               <tr>
-                <td><label for="chord-send-channel">Send to Channel:</label></td>
+                <td>
+                  <label for="chord-send-channel">Send to Channel:</label>
+                </td>
                 <td>
                   <select
                     id="chord-send-channel"
                     class="input-dropdown"
                   ></select>
-                </td>
-              </tr>
-                <td><label for="chord-mute">Mute:</label></td>
-                <td>
-                  <input type="checkbox" id="chord-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
-                <td><label for="chord-lock">Lock:</label></td>
-                <td>
-                  <input type="checkbox" id="chord-lock" class="checkbox" />
                 </td>
               </tr>
             </table>
@@ -573,12 +601,6 @@
                 </td>
               </tr>
               <tr>
-                <td><label for="drones-mute">Drone Mute:</label></td>
-                <td>
-                  <input type="checkbox" id="drones-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
                 <td><hr /></td>
               </tr>
               <tr>
@@ -597,7 +619,9 @@
               </tr>
               <tr>
                 <td>
-                  <label for="chord-extensions-send-channel">Extensions Channel:</label>
+                  <label for="chord-extensions-send-channel"
+                    >Extensions Channel:</label
+                  >
                 </td>
                 <td>
                   <select
@@ -607,9 +631,15 @@
                 </td>
               </tr>
               <tr>
-                <td><label for="chord-extensions-mute">Extensions Mute:</label></td>
                 <td>
-                  <input type="checkbox" id="chord-extensions-mute" class="checkbox" />
+                  <label for="chord-extensions-mute">Extensions Mute:</label>
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="chord-extensions-mute"
+                    class="checkbox"
+                  />
                 </td>
               </tr>
             </table>
@@ -709,18 +739,6 @@
                   ></select>
                 </td>
               </tr>
-              <tr>
-                <td><label for="melody-mute">Mute:</label></td>
-                <td>
-                  <input type="checkbox" id="melody-mute" class="checkbox" />
-                </td>
-              </tr>
-              <tr>
-                <td><label for="melody-lock">Lock:</label></td>
-                <td>
-                  <input type="checkbox" id="melody-lock" class="checkbox" />
-                </td>
-              </tr>
             </table>
           </div>
           <div class="sequence">
@@ -811,12 +829,6 @@
                   id="response-send-channel"
                   class="input-dropdown"
                 ></select>
-              </td>
-            </tr>
-            <tr>
-              <td><label for="response-mute">Mute:</label></td>
-              <td>
-                <input type="checkbox" id="response-mute" class="checkbox" />
               </td>
             </tr>
           </table>
