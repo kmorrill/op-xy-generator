@@ -75,6 +75,7 @@ function generateChords() {
     separateExtensions: document.getElementById("chord-extensions").checked,
     key: document.getElementById("key-select").value,
     scale: document.getElementById("scale-select").value,
+    chordsLength: parseInt(document.getElementById("chords-length").value),
   };
 
   const chordNotes = [];
@@ -91,23 +92,30 @@ function generateChords() {
       Math.floor(Math.random() * template.rhythmPatterns.length)
     ];
 
+  // Calculate the total number of steps based on chordsLength
+  const totalSteps = params.chordsLength * 8; // Each chord section is 8 steps
+
   // Generate notes for each chord in the progression
-  progression.forEach((degreeIndex, index) => {
+  for (let i = 0; i < params.chordsLength; i++) {
+    const degreeIndex = progression[i % progression.length];
     const rootNote = getScaleNoteAtDegree(
       params.key,
       CHORD_SCALES[params.scale],
       degreeIndex
     );
 
-    // Choose chord type based on complexity
     const chordType = getChordType(params.complexity);
     const chord = buildChord(rootNote, chordType, params.voicingSpread);
 
-    // Apply rhythm pattern
-    const stepOffset = index * 8; // 8 steps per chord
+    // Scale the rhythm pattern to the total length
+    const sectionLength = totalSteps / params.chordsLength;
+    const stepOffset = i * sectionLength;
+
     rhythmPattern.forEach((hit, stepIndex) => {
       if (hit) {
-        const startStep = stepOffset + stepIndex + 1;
+        // Scale the step index to the section length
+        const scaledStepIndex = (stepIndex * sectionLength) / 8;
+        const startStep = stepOffset + scaledStepIndex + 1;
         const duration = getDuration(params.rhythmicPlacement);
 
         // Add main chord tones
@@ -118,7 +126,7 @@ function generateChords() {
             start: startStep,
             end: startStep + duration,
             channel: CHORD_CHANNEL,
-            type: "main", // Metadata indicating it's a main chord tone
+            type: "main",
           });
         });
 
@@ -130,33 +138,33 @@ function generateChords() {
               velocity: 80,
               start: startStep,
               end: startStep + duration,
-              channel: document.getElementById("chord-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
-              type: "extension", // Metadata indicating it's an extension
+              channel: document.getElementById("chord-send-channel").value,
+              type: "extension",
             });
           });
         }
       }
     });
-  });
+  }
 
   // Add drone if enabled
   if (params.drones) {
     const rootNote = getScaleNoteAtDegree(
       params.key,
       CHORD_SCALES[params.scale],
-      0 // Always use the root note for drones
+      0
     );
     chordNotes.push({
       note: rootNote,
       velocity: 64,
       start: 1,
-      end: Infinity, // Play forever
-      channel: document.getElementById("drones-send-channel").value, // TODO this is a bit hacky since it doesn't data bind on change; need a better system for this
-      type: "drone", // Metadata indicating it's a drone
+      end: totalSteps + 1, // End at the total length instead of Infinity
+      channel: document.getElementById("drones-send-channel").value,
+      type: "drone",
     });
   }
 
-  return chordNotes; // Return the generated chord notes
+  return chordNotes;
 }
 
 // Helper functions

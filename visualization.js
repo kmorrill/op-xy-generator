@@ -109,8 +109,12 @@ function renderTrackVisualization(trackName) {
     rows.forEach((row) => {
       // Skip the first cell (label cell)
       const cellCount = row.cells.length - 1;
-      // Add empty cells until we have 32 beats (plus the label cell)
-      for (let i = cellCount; i < 32; i++) {
+      // Add empty cells until we have the specified length
+      for (
+        let i = cellCount;
+        i < document.getElementById("drum-length").value;
+        i++
+      ) {
         const cell = document.createElement("td");
         row.appendChild(cell);
       }
@@ -134,7 +138,7 @@ function renderTrackVisualization(trackName) {
       headerRow.appendChild(hitTypeHeader);
 
       // Add beat numbers 1-32
-      for (let i = 1; i <= 32; i++) {
+      for (let i = 1; i <= document.getElementById("drum-length").value; i++) {
         const th = document.createElement("th");
         th.textContent = i.toString();
         headerRow.appendChild(th);
@@ -246,7 +250,11 @@ function renderTrackVisualization(trackName) {
       headerRow.appendChild(noteHeader);
 
       // Add beat numbers 1-32
-      for (let i = 1; i <= 32; i++) {
+      for (
+        let i = 1;
+        i <= document.getElementById(`${trackName}-length`).value;
+        i++
+      ) {
         const th = document.createElement("th");
         th.textContent = i.toString();
         headerRow.appendChild(th);
@@ -287,7 +295,7 @@ function renderTrackVisualization(trackName) {
 
       // Add cells for each step
       let step = 0;
-      while (step < 32) {
+      while (step < document.getElementById(`${trackName}-length`).value) {
         const pitchNotes = notes.filter(
           (note) => note.note === pitch && note.start === step
         );
@@ -295,7 +303,10 @@ function renderTrackVisualization(trackName) {
         if (pitchNotes.length > 0) {
           const currentNote = pitchNotes[0];
           const duration = currentNote.end - currentNote.start;
-          const effectiveDuration = Math.min(duration, 32 - step);
+          const effectiveDuration = Math.min(
+            duration,
+            document.getElementById(`${trackName}-length`).value - step
+          );
 
           const cell = document.createElement("td");
           cell.colSpan = effectiveDuration;

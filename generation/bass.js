@@ -126,12 +126,13 @@ function generateBassLine() {
     key: document.getElementById("key-select").value,
     scale: document.getElementById("scale-select").value,
     drumPattern: generationState.tracks.drums || [],
+    patternLength: parseInt(document.getElementById("bass-length").value),
   };
 
   const genre = params.genre.toLowerCase();
   const template = BASS_GENRE_TEMPLATES[genre];
   const notes = [];
-  const patternLength = 32; // Total steps in pattern
+  const patternLength = params.patternLength; // Total steps in pattern
 
   // Convert parameter values to normalized values (0-1)
   const evolution = params.phraseEvolution / 100;

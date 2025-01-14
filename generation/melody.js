@@ -89,11 +89,12 @@ function generateMelody() {
   const responseRegister = document.getElementById(
     "melody-response-register"
   ).value;
+  const melodyLength = parseInt(document.getElementById("melody-length").value);
   const currentChords = [];
 
-  // Generate call and response sections
-  const callLength = Math.floor((32 * callResponseBalance) / 100);
-  const responseLength = 32 - callLength;
+  // Generate call and response sections based on total melody length
+  const callLength = Math.floor((melodyLength * callResponseBalance) / 100);
+  const responseLength = melodyLength - callLength;
 
   // Generate the call phrase
   const callNotes = generatePhrase({
@@ -111,7 +112,9 @@ function generateMelody() {
 
   // Calculate response parameters based on input
   const responseRegisterRange = calculateRegisterRange(responseRegister);
-  const responseStart = callLength + (responseDelay / 100) * 4; // Max 4 steps delay
+  // Scale response delay based on total length
+  const maxDelay = Math.min(4, melodyLength * 0.125); // Max delay is either 4 or 12.5% of length
+  const responseStart = callLength + (responseDelay / 100) * maxDelay;
 
   // Modify complexity for response based on responseComplexity parameter
   const responseRhythmicComplexity = adjustResponseComplexity(
@@ -244,8 +247,11 @@ function generateMelodyNote({
   // Calculate note duration based on step position
   const duration = calculateNoteDuration(currentStep);
 
+  // Get melody length from the DOM
+  const melodyLength = parseInt(document.getElementById("melody-length").value);
+
   // Check if the note would extend beyond sequence
-  if (currentStep + duration > 32) {
+  if (currentStep + duration > melodyLength) {
     return null;
   }
 

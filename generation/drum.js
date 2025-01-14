@@ -24,88 +24,212 @@ const DRUMS = {
   CHI: 76,
 };
 
-// Genre-specific drum pattern templates
+// Function to generate steps for a given length and base pattern
+function generateSteps(basePattern, trackLength) {
+  const result = [];
+  for (let i = 0; i < trackLength; i += 16) {
+    result.push(...basePattern.map((step) => step + i));
+  }
+  return result;
+}
+
+// Genre-specific drum pattern templates with dynamic step generation
 const GENRE_TEMPLATES = {
   edm: {
     core: {
-      [DRUMS.KICK]: { steps: [1, 5, 9, 13], probability: 0.9 },
-      [DRUMS.SNARE]: { steps: [5, 13], probability: 0.9 },
+      [DRUMS.KICK]: {
+        baseSteps: [1, 5, 9, 13],
+        probability: 0.9,
+        getSteps: (trackLength) => generateSteps([1, 5, 9, 13], trackLength),
+      },
+      [DRUMS.SNARE]: {
+        baseSteps: [5, 13],
+        probability: 0.9,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
       [DRUMS.CLOSED_HAT]: {
-        steps: [1, 3, 5, 7, 9, 11, 13, 15],
+        baseSteps: [1, 3, 5, 7, 9, 11, 13, 15],
         probability: 0.8,
+        getSteps: (trackLength) =>
+          generateSteps([1, 3, 5, 7, 9, 11, 13, 15], trackLength),
       },
     },
     auxiliary: {
-      [DRUMS.CRASH]: { steps: [1], probability: 0.3 },
-      [DRUMS.RIDE]: { steps: [3, 7, 11, 15], probability: 0.1 },
-      [DRUMS.CLAP]: { steps: [5, 13], probability: 0.2 },
+      [DRUMS.CRASH]: {
+        baseSteps: [1],
+        probability: 0.3,
+        getSteps: (trackLength) => generateSteps([1], trackLength),
+      },
+      [DRUMS.RIDE]: {
+        baseSteps: [3, 7, 11, 15],
+        probability: 0.1,
+        getSteps: (trackLength) => generateSteps([3, 7, 11, 15], trackLength),
+      },
+      [DRUMS.CLAP]: {
+        baseSteps: [5, 13],
+        probability: 0.2,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
     },
   },
   synthwave: {
     core: {
-      [DRUMS.KICK]: { steps: [1, 9], probability: 0.8 },
-      [DRUMS.SNARE]: { steps: [5, 13], probability: 0.8 },
-      [DRUMS.CLOSED_HAT]: { steps: [1, 5, 9, 13], probability: 0.7 },
+      [DRUMS.KICK]: {
+        baseSteps: [1, 9],
+        probability: 0.8,
+        getSteps: (trackLength) => generateSteps([1, 9], trackLength),
+      },
+      [DRUMS.SNARE]: {
+        baseSteps: [5, 13],
+        probability: 0.8,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
+      [DRUMS.CLOSED_HAT]: {
+        baseSteps: [1, 5, 9, 13],
+        probability: 0.7,
+        getSteps: (trackLength) => generateSteps([1, 5, 9, 13], trackLength),
+      },
     },
     auxiliary: {
-      [DRUMS.RIM]: { steps: [3, 7, 11, 15], probability: 0.6 },
-      [DRUMS.CRASH]: { steps: [1], probability: 0.4 },
-      [DRUMS.MID_TOM]: { steps: [14, 15, 16], probability: 0.2 },
+      [DRUMS.RIM]: {
+        baseSteps: [3, 7, 11, 15],
+        probability: 0.6,
+        getSteps: (trackLength) => generateSteps([3, 7, 11, 15], trackLength),
+      },
+      [DRUMS.CRASH]: {
+        baseSteps: [1],
+        probability: 0.4,
+        getSteps: (trackLength) => generateSteps([1], trackLength),
+      },
+      [DRUMS.MID_TOM]: {
+        baseSteps: [14, 15, 16],
+        probability: 0.2,
+        getSteps: (trackLength) => generateSteps([14, 15, 16], trackLength),
+      },
     },
   },
   hiphop: {
     core: {
-      [DRUMS.KICK]: { steps: [1, 7, 9, 15], probability: 0.8 },
-      [DRUMS.SNARE]: { steps: [5, 13], probability: 0.9 },
+      [DRUMS.KICK]: {
+        baseSteps: [1, 7, 9, 15],
+        probability: 0.8,
+        getSteps: (trackLength) => generateSteps([1, 7, 9, 15], trackLength),
+      },
+      [DRUMS.SNARE]: {
+        baseSteps: [5, 13],
+        probability: 0.9,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
       [DRUMS.CLOSED_HAT]: {
-        steps: [1, 3, 5, 7, 9, 11, 13, 15],
+        baseSteps: [1, 3, 5, 7, 9, 11, 13, 15],
         probability: 0.7,
+        getSteps: (trackLength) =>
+          generateSteps([1, 3, 5, 7, 9, 11, 13, 15], trackLength),
       },
     },
     auxiliary: {
-      [DRUMS.CLAP]: { steps: [5, 13], probability: 0.5 },
-      [DRUMS.CONGA_HIGH]: { steps: [4, 8, 12, 16], probability: 0.2 },
+      [DRUMS.CLAP]: {
+        baseSteps: [5, 13],
+        probability: 0.5,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
+      [DRUMS.CONGA_HIGH]: {
+        baseSteps: [4, 8, 12, 16],
+        probability: 0.2,
+        getSteps: (trackLength) => generateSteps([4, 8, 12, 16], trackLength),
+      },
       [DRUMS.PEDAL_HAT]: {
-        steps: [2, 4, 6, 8, 10, 12, 14, 16],
+        baseSteps: [2, 4, 6, 8, 10, 12, 14, 16],
         probability: 0.3,
+        getSteps: (trackLength) =>
+          generateSteps([2, 4, 6, 8, 10, 12, 14, 16], trackLength),
       },
     },
   },
   ambient: {
     core: {
-      [DRUMS.KICK]: { steps: [1, 9], probability: 0.5 },
-      [DRUMS.SHAKER]: { steps: [1, 3, 5, 7, 9, 11, 13, 15], probability: 0.6 },
+      [DRUMS.KICK]: {
+        baseSteps: [1, 9],
+        probability: 0.5,
+        getSteps: (trackLength) => generateSteps([1, 9], trackLength),
+      },
+      [DRUMS.SHAKER]: {
+        baseSteps: [1, 3, 5, 7, 9, 11, 13, 15],
+        probability: 0.6,
+        getSteps: (trackLength) =>
+          generateSteps([1, 3, 5, 7, 9, 11, 13, 15], trackLength),
+      },
     },
     auxiliary: {
-      [DRUMS.GUIRO]: { steps: [3, 7, 11, 15], probability: 0.3 },
-      [DRUMS.CRASH]: { steps: [1], probability: 0.2 },
+      [DRUMS.GUIRO]: {
+        baseSteps: [3, 7, 11, 15],
+        probability: 0.3,
+        getSteps: (trackLength) => generateSteps([3, 7, 11, 15], trackLength),
+      },
+      [DRUMS.CRASH]: {
+        baseSteps: [1],
+        probability: 0.2,
+        getSteps: (trackLength) => generateSteps([1], trackLength),
+      },
     },
   },
   house: {
     core: {
-      [DRUMS.KICK]: { steps: [1, 5, 9, 13], probability: 1.0 },
-      [DRUMS.SNARE]: { steps: [5, 13], probability: 0.5 },
+      [DRUMS.KICK]: {
+        baseSteps: [1, 5, 9, 13],
+        probability: 1.0,
+        getSteps: (trackLength) => generateSteps([1, 5, 9, 13], trackLength),
+      },
+      [DRUMS.SNARE]: {
+        baseSteps: [5, 13],
+        probability: 0.5,
+        getSteps: (trackLength) => generateSteps([5, 13], trackLength),
+      },
       [DRUMS.CLOSED_HAT]: {
-        steps: [2, 4, 6, 8, 10, 12, 14, 16],
+        baseSteps: [2, 4, 6, 8, 10, 12, 14, 16],
         probability: 0.8,
+        getSteps: (trackLength) =>
+          generateSteps([2, 4, 6, 8, 10, 12, 14, 16], trackLength),
       },
     },
     auxiliary: {
-      [DRUMS.CLAP]: { steps: [2, 6, 10, 14], probability: 0.4 },
-      [DRUMS.RIDE]: { steps: [1, 5, 9, 13], probability: 0.3 },
+      [DRUMS.CLAP]: {
+        baseSteps: [2, 6, 10, 14],
+        probability: 0.4,
+        getSteps: (trackLength) => generateSteps([2, 6, 10, 14], trackLength),
+      },
+      [DRUMS.RIDE]: {
+        baseSteps: [1, 5, 9, 13],
+        probability: 0.3,
+        getSteps: (trackLength) => generateSteps([1, 5, 9, 13], trackLength),
+      },
     },
   },
   experimental: {
     core: {
-      [DRUMS.METAL]: { steps: [1, 5, 9, 13], probability: 0.2 },
+      [DRUMS.METAL]: {
+        baseSteps: [1, 5, 9, 13],
+        probability: 0.2,
+        getSteps: (trackLength) => generateSteps([1, 5, 9, 13], trackLength),
+      },
       [DRUMS.CHI]: {
-        steps: Array.from({ length: 16 }, (_, i) => i + 1),
+        baseSteps: Array.from({ length: 16 }, (_, i) => i + 1),
         probability: 0.3,
+        getSteps: (trackLength) =>
+          Array.from({ length: trackLength }, (_, i) => i + 1),
       },
     },
     auxiliary: {
-      [DRUMS.LOW_TOM]: { steps: [2, 6, 10, 14], probability: 0.4 },
-      [DRUMS.HIGH_TOM]: { steps: [4, 8, 12, 16], probability: 0.4 },
+      [DRUMS.LOW_TOM]: {
+        baseSteps: [2, 6, 10, 14],
+        probability: 0.4,
+        getSteps: (trackLength) => generateSteps([2, 6, 10, 14], trackLength),
+      },
+      [DRUMS.HIGH_TOM]: {
+        baseSteps: [4, 8, 12, 16],
+        probability: 0.4,
+        getSteps: (trackLength) => generateSteps([4, 8, 12, 16], trackLength),
+      },
     },
   },
 };
@@ -117,7 +241,7 @@ if (!window.generationState) {
 generationState.tracks.drums = [];
 
 // 1) Function to build an initial pattern from the genre template
-function buildPatternFromTemplate(genre, density, balance) {
+function buildPatternFromTemplate(genre, density, balance, trackLength) {
   const template = GENRE_TEMPLATES[genre];
   if (!template) return [];
 
@@ -125,13 +249,14 @@ function buildPatternFromTemplate(genre, density, balance) {
 
   // Generate core elements
   Object.entries(template.core).forEach(([note, config]) => {
-    const { steps, probability } = config;
+    const { probability } = config;
+    const steps = config.getSteps(trackLength);
     const adjustedProb = probability * (1 - balance * 0.5) * density;
     steps.forEach((step) => {
-      if (Math.random() < adjustedProb) {
+      if (Math.random() < adjustedProb && step <= trackLength) {
         pattern.push({
           note: parseInt(note),
-          velocity: Math.floor(calculateVelocity(step, 0)), // pass variation=0 here or similar
+          velocity: Math.floor(calculateVelocity(step, 0)),
           start: step,
           end: step + 1,
         });
@@ -141,10 +266,11 @@ function buildPatternFromTemplate(genre, density, balance) {
 
   // Generate auxiliary elements
   Object.entries(template.auxiliary).forEach(([note, config]) => {
-    const { steps, probability } = config;
+    const { probability } = config;
+    const steps = config.getSteps(trackLength);
     const adjustedProb = probability * balance * density;
     steps.forEach((step) => {
-      if (Math.random() < adjustedProb) {
+      if (Math.random() < adjustedProb && step <= trackLength) {
         pattern.push({
           note: parseInt(note),
           velocity: Math.floor(calculateVelocity(step, 0)),
@@ -160,25 +286,14 @@ function buildPatternFromTemplate(genre, density, balance) {
 
 // 2) Function to preserve core beats
 function preserveCoreBeats(pattern, preserveFactor = 0.7) {
-  // Define "core" instruments you want to preserve across *all* genres
-  // (you could also branch this by genre if needed)
-  const coreInstruments = new Set([
-    DRUMS.KICK,
-    DRUMS.SNARE,
-    DRUMS.CLOSED_HAT,
-    // or add RIM, CLAP, etc. if you consider them "core"
-  ]);
+  const coreInstruments = new Set([DRUMS.KICK, DRUMS.SNARE, DRUMS.CLOSED_HAT]);
 
   return pattern.map((note) => {
     if (coreInstruments.has(note.note)) {
-      // If we pass this random check, we skip removing or messing with it
-      // so these notes are less likely to be lost or heavily altered
       if (Math.random() < preserveFactor) {
-        // Return the note as-is
         return note;
       }
     }
-    // For notes not preserved, return as-is (they can still be changed later)
     return note;
   });
 }
@@ -194,27 +309,23 @@ function calculateVelocity(step, variation) {
       Math.floor(baseVelocity + (Math.random() * randomRange - randomRange / 2))
     )
   );
-  // Ensure velocity is an integer between 1 and 100
   velocity = Math.max(1, Math.min(100, velocity));
   return velocity;
 }
 
 // 4) Apply variation (smaller/no offset for Kick/Snare, plus fills at end)
-function applyVariation(pattern, variation) {
+function applyVariation(pattern, variation, trackLength) {
   let variedPattern = pattern.map((note) => {
     let timingOffset = 0;
 
-    // If NOT Kick or Snare, apply timing offset
     if (![DRUMS.KICK, DRUMS.SNARE].includes(note.note)) {
       timingOffset = Math.random() * variation * 0.5 - 0.25;
-      // e.g. ±0.25 steps * variation
     }
     let newStart = note.start + timingOffset;
     newStart = Math.round(newStart);
-    newStart = Math.max(1, Math.min(newStart, 32));
-    let newEnd = Math.min(newStart + 1, 32);
+    newStart = Math.max(1, Math.min(newStart, trackLength));
+    let newEnd = Math.min(newStart + 1, trackLength);
 
-    // Apply velocity variation
     let newVelocity = note.velocity + (Math.random() * 20 - 10) * variation;
     newVelocity = Math.max(30, Math.min(newVelocity, 127));
     newVelocity = Math.floor(newVelocity);
@@ -227,50 +338,63 @@ function applyVariation(pattern, variation) {
     };
   });
 
-  // Now add fills primarily near the end
-  variedPattern = addFillsAtEnd(variedPattern, variation);
+  variedPattern = addFillsAtEnd(variedPattern, variation, trackLength);
   return variedPattern;
 }
 
-// 5) Add fills at the end (e.g., steps 29-32)
-function addFillsAtEnd(pattern, variation) {
-  // e.g. 30% chance of a fill if variation is 1.0
-  if (Math.random() < variation * 0.3) {
-    // fillStart anywhere from 29 to 32
-    const fillStart = Math.floor(Math.random() * 4) + 29; // 29-32
-    const fillNotes = [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM];
+// 5) Add fills at the end
+function addFillsAtEnd(pattern, variation, trackLength) {
+  const sectionLength = 16;
+  const numSections = Math.floor(trackLength / sectionLength);
 
-    for (let i = 0; i < 4; i++) {
-      const currentStep = fillStart + i;
-      if (currentStep > 32) break;
+  for (let section = 0; section < numSections; section++) {
+    if (Math.random() < variation * 0.3) {
+      const sectionStart = (section + 1) * sectionLength - 4;
+      const fillNotes = [DRUMS.LOW_TOM, DRUMS.MID_TOM, DRUMS.HIGH_TOM];
 
-      if (Math.random() < 0.6) {
-        pattern.push({
-          note: fillNotes[Math.floor(Math.random() * fillNotes.length)],
-          velocity: 70 + Math.floor(Math.random() * 40), // 70-109
-          start: currentStep,
-          end: Math.min(currentStep + 1, 32),
-        });
+      for (let i = 0; i < 4; i++) {
+        const currentStep = sectionStart + i;
+        if (currentStep > trackLength) break;
+
+        if (Math.random() < 0.6) {
+          pattern.push({
+            note: fillNotes[Math.floor(Math.random() * fillNotes.length)],
+            velocity: 70 + Math.floor(Math.random() * 40),
+            start: currentStep,
+            end: Math.min(currentStep + 1, trackLength),
+          });
+        }
       }
     }
   }
   return pattern;
 }
 
-// 6) Apply repetition logic (unchanged from your original or lightly modified)
-function applyRepetition(pattern, repetition, genre) {
+// 6) Apply repetition logic
+function applyRepetition(pattern, repetition, genre, trackLength) {
   if (repetition < 0.7) return pattern;
 
-  // For high repetition, we remove sections and regenerate them
   const template = GENRE_TEMPLATES[genre];
-  for (let i = 8; i < 32; i += 8) {
+  const sectionLength = 16;
+  const numSections = Math.floor(trackLength / sectionLength);
+
+  for (let section = 0; section < numSections; section++) {
+    const sectionStart = section * sectionLength;
     if (Math.random() < repetition) {
-      // Remove existing notes in this 8-step section
-      pattern = pattern.filter((note) => note.start < i || note.start >= i + 8);
+      // Remove existing notes in this section
+      pattern = pattern.filter(
+        (note) =>
+          note.start < sectionStart ||
+          note.start >= sectionStart + sectionLength
+      );
 
       // Add new variations in this section
       if (template) {
-        const sectionPattern = generateSectionPattern(template, i);
+        const sectionPattern = generateSectionPattern(
+          template,
+          sectionStart,
+          sectionLength
+        );
         pattern = pattern.concat(sectionPattern);
       }
     }
@@ -280,17 +404,17 @@ function applyRepetition(pattern, repetition, genre) {
 }
 
 // 6.1) Generate a small snippet for a repeated section
-function generateSectionPattern(template, startStep) {
+function generateSectionPattern(template, startStep, sectionLength) {
   const pattern = [];
   const instruments = { ...template.core, ...template.auxiliary };
 
   Object.entries(instruments).forEach(([note, config]) => {
-    const { probability, steps } = config;
-    // Shift the config steps by startStep
-    const shiftedSteps = steps.map((step) => step + startStep);
+    const { probability, baseSteps } = config;
+    // Shift the base steps by startStep
+    const shiftedSteps = baseSteps.map((step) => step + startStep);
 
     shiftedSteps.forEach((step) => {
-      if (step < startStep + 8 && Math.random() < probability) {
+      if (step < startStep + sectionLength && Math.random() < probability) {
         pattern.push({
           note: parseInt(note),
           velocity: calculateVelocity(step, 0.5),
@@ -304,24 +428,33 @@ function generateSectionPattern(template, startStep) {
   return pattern;
 }
 
-// 7) Extend pattern to 32 steps by duplicating first half
-function extendPattern(pattern) {
-  const secondHalf = pattern
-    .filter((note) => note.start <= 16)
-    .map((note) => ({
-      ...note,
-      start: note.start + 16,
-      end: note.end + 16,
-      velocity: Math.max(
-        30,
-        Math.min(127, note.velocity + (Math.random() * 20 - 10))
-      ),
-    }));
+// 7) Extend pattern to full length
+function extendPattern(pattern, trackLength) {
+  if (trackLength <= 16) return pattern;
 
-  return [...pattern, ...secondHalf];
+  const baseLength = 16;
+  const numRepetitions = Math.floor(trackLength / baseLength) - 1;
+  let extendedPattern = [...pattern];
+
+  for (let i = 0; i < numRepetitions; i++) {
+    const newNotes = pattern
+      .filter((note) => note.start <= baseLength)
+      .map((note) => ({
+        ...note,
+        start: note.start + (i + 1) * baseLength,
+        end: note.end + (i + 1) * baseLength,
+        velocity: Math.max(
+          30,
+          Math.min(127, note.velocity + (Math.random() * 20 - 10))
+        ),
+      }));
+    extendedPattern = [...extendedPattern, ...newNotes];
+  }
+
+  return extendedPattern;
 }
 
-// 8) The main generation function with preserveCoreBeats integrated
+// 8) The main generation function
 function generateDrumPattern() {
   const genre = document.getElementById("genre-select").value;
   const density = parseInt(document.getElementById("drum-density").value) / 100;
@@ -330,22 +463,24 @@ function generateDrumPattern() {
   const balance = parseInt(document.getElementById("drum-balance").value) / 100;
   const repetition =
     parseInt(document.getElementById("drum-repetition").value) / 100;
+  const trackLength = parseInt(document.getElementById("drum-length").value);
 
   // (1) Build initial pattern from the template
-  let pattern = buildPatternFromTemplate(genre, density, balance);
+  let pattern = buildPatternFromTemplate(genre, density, balance, trackLength);
 
   // (2) Preserve a subset of core beats
   pattern = preserveCoreBeats(pattern, 0.7);
-  // e.g. 70% chance of not messing with core instruments
 
-  // (3) Apply variation (with smaller/no offset for Kick/Snare)
-  pattern = applyVariation(pattern, variation);
+  // (3) Apply variation
+  pattern = applyVariation(pattern, variation, trackLength);
 
   // (4) Apply repetition logic
-  pattern = applyRepetition(pattern, repetition, genre);
+  pattern = applyRepetition(pattern, repetition, genre, trackLength);
 
-  // (5) Extend pattern to 32 steps
-  pattern = extendPattern(pattern);
+  // (5) Extend pattern if needed
+  if (trackLength > 16) {
+    pattern = extendPattern(pattern, trackLength);
+  }
 
   // Update global state
   const adjustedPattern = pattern.map((note) => {
