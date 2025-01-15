@@ -130,8 +130,12 @@ function generateChords() {
           });
         });
 
-        // Add extensions if enabled
-        if (params.separateExtensions && chord.extensions) {
+        // Add extensions if enabled and they exist
+        if (
+          params.separateExtensions &&
+          chord.extensions &&
+          chord.extensions.length > 0
+        ) {
           chord.extensions.forEach((note) => {
             chordNotes.push({
               note,
@@ -149,19 +153,35 @@ function generateChords() {
 
   // Add drone if enabled
   if (params.drones) {
+    console.log("Adding drones");
+
     const rootNote = getScaleNoteAtDegree(
       params.key,
       CHORD_SCALES[params.scale],
       0
     );
+    // Add both root and fifth for a richer drone
+    const fifthNote = rootNote + 7;
+
     chordNotes.push({
       note: rootNote,
       velocity: 64,
       start: 1,
-      end: totalSteps + 1, // End at the total length instead of Infinity
+      end: totalSteps + 1,
       channel: document.getElementById("drones-send-channel").value,
       type: "drone",
     });
+
+    chordNotes.push({
+      note: fifthNote,
+      velocity: 48, // Slightly quieter fifth
+      start: 1,
+      end: totalSteps + 1,
+      channel: DRONE_CHANNEL,
+      type: "drone",
+    });
+  } else {
+    console.log("Not adding drones");
   }
 
   return chordNotes;
@@ -169,8 +189,8 @@ function generateChords() {
 
 // Helper functions
 function getChordType(complexity) {
-  if (complexity < 30) return CHORD_TYPES.triad;
-  if (complexity < 70) return CHORD_TYPES.seventh;
+  if (complexity < 25) return CHORD_TYPES.triad;
+  if (complexity < 60) return CHORD_TYPES.seventh;
   return CHORD_TYPES.ninth;
 }
 
