@@ -320,9 +320,6 @@ function renderTrackVisualization(trackName) {
             currentNote.channel !== standardChannel
           ) {
             cell.style.backgroundColor = "#0000FF"; // Blue for non-standard channel
-            console.log(
-              `Found a non-standard channel: ${currentNote.channel} for track: ${trackName}`
-            );
           } else {
             cell.style.backgroundColor = "#FFFF00"; // Yellow for standard channel
           }
