@@ -184,6 +184,22 @@
       #track-controls tr td:first-child label {
         font-weight: bold;
       }
+
+      /* Add CSS for beat highlighting */
+      .sequence-table th.current-beat {
+        background-color: #ffd700;
+        transition: background-color 0.1s ease;
+      }
+
+      /* Add CSS for beat headers */
+      .sequence-table th {
+        min-width: 30px;
+        height: 30px;
+        text-align: center;
+        background-color: #f0f0f0;
+        font-weight: bold;
+        transition: background-color 0.1s ease;
+      }
     </style>
   </head>
   <body>
@@ -308,7 +324,8 @@
                 <td><label for="drums-length">Length:</label></td>
                 <td>
                   <select id="drum-length" class="input-dropdown knob">
-                    <option value="16">16</option>
+                    <option value="8">8</option>
+                    <option value="16" selected>16</option>
                     <option value="32">32</option>
                     <option value="64">64</option>
                   </select>
@@ -382,6 +399,47 @@
               <thead>
                 <tr>
                   <th>Hit Type</th>
+                  <!-- Add beat headers dynamically -->
+                  <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                      // Function to update beat headers
+                      function updateBeatHeaders() {
+                        document
+                          .querySelectorAll(".sequence-table thead tr")
+                          .forEach((headerRow) => {
+                            // Clear existing beat headers (except first column)
+                            while (headerRow.children.length > 1) {
+                              headerRow.removeChild(headerRow.lastChild);
+                            }
+
+                            // Get track length from closest length select
+                            const trackSection =
+                              headerRow.closest(".track-section");
+                            const lengthSelect = trackSection.querySelector(
+                              'select[id$="-length"]'
+                            );
+                            const length = parseInt(lengthSelect.value);
+
+                            // Add beat headers
+                            for (let i = 1; i <= length; i++) {
+                              const th = document.createElement("th");
+                              th.textContent = i;
+                              headerRow.appendChild(th);
+                            }
+                          });
+                      }
+
+                      // Update headers initially
+                      updateBeatHeaders();
+
+                      // Update headers when length changes
+                      document
+                        .querySelectorAll('select[id$="-length"]')
+                        .forEach((select) => {
+                          select.addEventListener("change", updateBeatHeaders);
+                        });
+                    });
+                  </script>
                 </tr>
               </thead>
               <tbody>
@@ -411,7 +469,8 @@
                 <td><label for="bass-length">Length:</label></td>
                 <td>
                   <select id="bass-length" class="input-dropdown knob">
-                    <option value="16">16</option>
+                    <option value="8">8</option>
+                    <option value="16" selected>16</option>
                     <option value="32">32</option>
                     <option value="64">64</option>
                   </select>
@@ -506,7 +565,8 @@
                 <td><label for="chord-length">Length:</label></td>
                 <td>
                   <select id="chords-length" class="input-dropdown knob">
-                    <option value="16">16</option>
+                    <option value="8">8</option>
+                    <option value="16" selected>16</option>
                     <option value="32">32</option>
                     <option value="64">64</option>
                   </select>
@@ -662,7 +722,8 @@
                 <td><label for="melody-length">Length:</label></td>
                 <td>
                   <select id="melody-length" class="input-dropdown knob">
-                    <option value="16">16</option>
+                    <option value="8">8</option>
+                    <option value="16" selected>16</option>
                     <option value="32">32</option>
                     <option value="64">64</option>
                   </select>
@@ -823,9 +884,18 @@
         </section>
       </section>
       <section>
-        Make sure under COM -> System -> midi to set active track ch. to
-        something not otherwise mapped on this page; otherwise notes we send to
-        that track will get duplicated to any other channel you switch to.
+        <p>
+          Track lengths can be set independently (8, 16, 32, or 64 steps). The
+          overall pattern will loop after the least common multiple of all track
+          lengths. For example, if you have tracks of length 8 and 16, the
+          pattern will loop after 16 steps. If you have tracks of length 16 and
+          32, it will loop after 32 steps.
+        </p>
+        <p>
+          Make sure under COM -> System -> midi to set active track ch. to
+          something not otherwise mapped on this page; otherwise notes we send
+          to that track will get duplicated to any other channel you switch to.
+        </p>
       </section>
     </main>
 
