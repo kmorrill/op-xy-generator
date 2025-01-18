@@ -104,17 +104,26 @@ function renderTrackVisualization(trackName) {
       return;
     }
 
-    // Initialize the table rows with empty cells if needed
+    // Determine the new length of the drum track
+    const newDrumLength = document.getElementById("drum-length").value;
+
+    // Clear unnecessary columns if the drum track length was shortened
     const rows = tbody.querySelectorAll("tr");
     rows.forEach((row) => {
       // Skip the first cell (label cell)
       const cellCount = row.cells.length - 1;
-      // Add empty cells until we have the specified length
-      for (
-        let i = cellCount;
-        i < document.getElementById("drum-length").value;
-        i++
-      ) {
+      // Remove cells if the current cell count exceeds the new drum length
+      for (let i = cellCount; i > newDrumLength; i--) {
+        row.removeChild(row.cells[i]);
+      }
+    });
+
+    // Add new columns if the drum track length was increased
+    rows.forEach((row) => {
+      // Skip the first cell (label cell)
+      const cellCount = row.cells.length - 1;
+      // Add cells until we have the specified length
+      for (let i = cellCount; i < newDrumLength; i++) {
         const cell = document.createElement("td");
         row.appendChild(cell);
       }
@@ -137,8 +146,8 @@ function renderTrackVisualization(trackName) {
       hitTypeHeader.textContent = "Hit Type";
       headerRow.appendChild(hitTypeHeader);
 
-      // Add beat numbers 1-32
-      for (let i = 1; i <= document.getElementById("drum-length").value; i++) {
+      // Add beat numbers 1-newDrumLength
+      for (let i = 1; i <= newDrumLength; i++) {
         const th = document.createElement("th");
         th.textContent = i.toString();
         headerRow.appendChild(th);
