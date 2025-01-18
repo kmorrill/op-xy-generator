@@ -112,8 +112,8 @@
         font-weight: bold;
       }
 
-      /* Highlight Active Notes */
-      .sequence-table td.hit {
+      /* Active Notes Styling */
+      .sequence-table td.active-hit {
         background-color: #ffd700; /* Gold color for active notes */
         color: black;
         font-weight: bold;
@@ -199,6 +199,21 @@
         background-color: #f0f0f0;
         font-weight: bold;
         transition: background-color 0.1s ease;
+      }
+
+      /* Add CSS for clickable cells */
+      .sequence-table td:not(:first-child) {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .sequence-table td:not(:first-child):hover {
+        background-color: #f0f0f0;
+      }
+
+      .sequence-table td.active-hit {
+        background-color: #ffd700;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -395,7 +410,7 @@
           </div>
           <div class="sequence">
             <h4>Drum Sequence</h4>
-            <table class="sequence-table">
+            <table id="drum-sequence" class="sequence-table">
               <thead>
                 <tr>
                   <th>Hit Type</th>
@@ -426,7 +441,103 @@
                               th.textContent = i;
                               headerRow.appendChild(th);
                             }
+
+                            // Add empty cells for each row
+                            const tbody = headerRow
+                              .closest("table")
+                              .querySelector("tbody");
+                            tbody.querySelectorAll("tr").forEach((row) => {
+                              // Clear existing cells (except first column)
+                              while (row.children.length > 1) {
+                                row.removeChild(row.lastChild);
+                              }
+
+                              // Add clickable cells
+                              for (let i = 1; i <= length; i++) {
+                                const td = document.createElement("td");
+                                td.addEventListener(
+                                  "click",
+                                  handleDrumCellClick
+                                );
+                                row.appendChild(td);
+                              }
+                            });
                           });
+                      }
+
+                      // Function to handle drum cell clicks
+                      function handleDrumCellClick(event) {
+                        const cell = event.target;
+                        // Skip if clicking the first column (labels)
+                        if (cell.cellIndex === 0) return;
+
+                        const row = cell.parentElement;
+                        const rowId = row.id; // e.g., "kick-row", "snare-row"
+                        const step = cell.cellIndex; // 1-based index since first column is label
+
+                        // Map row IDs to DRUMS constants
+                        const drumNoteMap = {
+                          "kick-row": DRUMS.KICK,
+                          "snare-row": DRUMS.SNARE,
+                          "hi-hat-row": DRUMS.CLOSED_HAT,
+                          "other-row": DRUMS.CRASH, // Using CRASH as default for "other"
+                        };
+
+                        const note = drumNoteMap[rowId];
+                        if (!note) {
+                          console.warn(
+                            "No MIDI note mapping found for row:",
+                            rowId
+                          );
+                          return;
+                        }
+
+                        // Toggle active state
+                        cell.classList.toggle("active-hit");
+
+                        // Initialize generationState if needed
+                        if (!window.generationState) {
+                          window.generationState = { tracks: {} };
+                        }
+                        if (!window.generationState.tracks) {
+                          window.generationState.tracks = {};
+                        }
+                        if (!window.generationState.tracks.drums) {
+                          window.generationState.tracks.drums = [];
+                        }
+
+                        const isActive = cell.classList.contains("active-hit");
+                        const velocity = 100; // Default velocity
+
+                        if (isActive) {
+                          // Add new hit
+                          const newHit = {
+                            note: note,
+                            start: step,
+                            end: step + 1,
+                            velocity: velocity,
+                          };
+                          window.generationState.tracks.drums.push(newHit);
+                          console.log("New hit created:", newHit);
+                        } else {
+                          // Remove hit
+                          window.generationState.tracks.drums =
+                            window.generationState.tracks.drums.filter(
+                              (hit) =>
+                                !(hit.note === note && hit.start === step)
+                            );
+                        }
+
+                        // Sort hits by start time
+                        window.generationState.tracks.drums.sort(
+                          (a, b) => a.start - b.start
+                        );
+
+                        // Log the state for debugging
+                        console.log(
+                          "Updated generationState:",
+                          window.generationState
+                        );
                       }
 
                       // Update headers initially
@@ -438,21 +549,62 @@
                         .forEach((select) => {
                           select.addEventListener("change", updateBeatHeaders);
                         });
+
+                      // Function to update cell states from generationState
+                      function updateDrumCellsFromState() {
+                        if (!window.generationState?.tracks?.drums) return;
+
+                        const drumTable =
+                          document.getElementById("drum-sequence");
+                        if (!drumTable) return;
+
+                        // Map DRUMS values back to row IDs
+                        const drumNoteToRowMap = {
+                          [DRUMS.KICK]: "kick-row",
+                          [DRUMS.SNARE]: "snare-row",
+                          [DRUMS.CLOSED_HAT]: "hi-hat-row",
+                          [DRUMS.CRASH]: "other-row",
+                        };
+
+                        // Clear all active states first
+                        drumTable.querySelectorAll("td").forEach((td) => {
+                          if (td.cellIndex !== 0) {
+                            // Skip first column (labels)
+                            td.classList.remove("active-hit");
+                          }
+                        });
+
+                        // Set active states based on generationState
+                        window.generationState.tracks.drums.forEach((hit) => {
+                          const rowId = drumNoteToRowMap[hit.note];
+                          if (rowId) {
+                            const row = drumTable.querySelector(`#${rowId}`);
+                            if (row && row.cells[hit.start]) {
+                              row.cells[hit.start].classList.add("active-hit");
+                            }
+                          }
+                        });
+                      }
+
+                      // Call this whenever generationState changes
+                      // You might want to expose this function globally
+                      window.updateDrumCellsFromState =
+                        updateDrumCellsFromState;
                     });
                   </script>
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr id="kick-row">
                   <td style="white-space: nowrap">Kick</td>
                 </tr>
-                <tr>
+                <tr id="snare-row">
                   <td style="white-space: nowrap">Snare</td>
                 </tr>
-                <tr>
+                <tr id="hi-hat-row">
                   <td style="white-space: nowrap">Hi-Hat</td>
                 </tr>
-                <tr>
+                <tr id="other-row">
                   <td style="white-space: nowrap">Other</td>
                 </tr>
               </tbody>

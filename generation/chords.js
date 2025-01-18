@@ -252,8 +252,11 @@ function getNoteNumber(noteName) {
 }
 
 // Add chord generation to the global generation state
-if (typeof generationState === "undefined") {
-  generationState = {};
+if (!window.generationState) {
+  window.generationState = { tracks: {} };
+}
+if (!window.generationState.tracks.chords) {
+  window.generationState.tracks.chords = [];
 }
 
-generationState.generateChords = generateChords;
+window.generationState.generateChords = generateChords;

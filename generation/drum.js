@@ -238,7 +238,9 @@ const GENRE_TEMPLATES = {
 if (!window.generationState) {
   window.generationState = { tracks: {} };
 }
-generationState.tracks.drums = [];
+if (!window.generationState.tracks.drums) {
+  window.generationState.tracks.drums = [];
+}
 
 // 1) Function to build an initial pattern from the genre template
 function buildPatternFromTemplate(genre, density, balance, trackLength) {

@@ -155,9 +155,9 @@ function renderTrackVisualization(trackName) {
     }
 
     // Clear previous 'hit' classes and innerHTML
-    let hitCells = tbody.querySelectorAll("td.hit");
+    let hitCells = tbody.querySelectorAll("td.active-hit");
     hitCells.forEach((cell) => {
-      cell.classList.remove("hit");
+      cell.classList.remove("active-hit");
       cell.innerHTML = "";
     });
 
@@ -210,7 +210,7 @@ function renderTrackVisualization(trackName) {
       const cell = row.cells[start];
       if (cell) {
         cell.innerHTML = "•";
-        cell.classList.add("hit");
+        cell.classList.add("active-hit");
       }
     });
 

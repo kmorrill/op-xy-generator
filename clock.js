@@ -99,7 +99,7 @@ function updateStepHighlight(step) {
     const headers = table.querySelectorAll("th");
     const trackLength = parseInt(
       table.closest(".track-section").querySelector('select[id$="-length"]')
-        .value
+        ?.value || "16"
     );
     const normalizedStep = ((step - 1) % trackLength) + 1;
 
@@ -108,4 +108,9 @@ function updateStepHighlight(step) {
       headers[normalizedStep].classList.add("current-beat");
     }
   });
+
+  // Update drum cell states from generationState
+  if (window.updateDrumCellsFromState) {
+    window.updateDrumCellsFromState();
+  }
 }

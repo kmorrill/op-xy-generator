@@ -9,27 +9,29 @@ const MIDI_CHANNELS = {
   chordExtensions: 6,
 };
 
-// State
-let generationState = {
-  genre: "edm",
-  key: "C",
-  scale: "major",
-  tracks: {
-    drums: [],
-    bass: [],
-    melody: [],
-    callResponse: [],
-    chords: [],
-    drones: [],
-    chordExtensions: [],
-  },
-};
+// Initialize window.generationState if it doesn't exist
+if (!window.generationState) {
+  window.generationState = {
+    genre: "edm",
+    key: "C",
+    scale: "major",
+    tracks: {
+      drums: [],
+      bass: [],
+      melody: [],
+      callResponse: [],
+      chords: [],
+      drones: [],
+      chordExtensions: [],
+    },
+  };
+}
 
 function regenerateTracks() {
-  generationState.tracks.drums = generateDrumPattern();
-  generationState.tracks.bass = generateBassLine();
-  generationState.tracks.chords = generateChords(generationState);
-  generationState.tracks.melody = generateMelody();
+  window.generationState.tracks.drums = generateDrumPattern();
+  window.generationState.tracks.bass = generateBassLine();
+  window.generationState.tracks.chords = generateChords(window.generationState);
+  window.generationState.tracks.melody = generateMelody();
 
   renderAllVisualizations();
 }
