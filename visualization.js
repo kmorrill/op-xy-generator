@@ -330,7 +330,15 @@ function renderTrackVisualization(trackName) {
           ) {
             cell.style.backgroundColor = "#0000FF"; // Blue for non-standard channel
           } else {
-            cell.style.backgroundColor = "#FFFF00"; // Yellow for standard channel
+            if (currentNote.type !== "response") {
+              cell.style.backgroundColor = "#FFFF00"; // Yellow for standard channel
+            }
+          }
+
+          // Check if the note is a response note
+          if (currentNote.type === "response") {
+            console.log("Adding response-note class");
+            cell.classList.add("response-note");
           }
 
           row.appendChild(cell);

@@ -6,6 +6,12 @@ const RESPONSE_CHANNEL = 5;
 const MIN_VELOCITY = 60;
 const MAX_VELOCITY = 127;
 
+// Note types for melody
+const NOTE_TYPES = {
+  MELODY: "melody",
+  RESPONSE: "response",
+};
+
 // Scale definitions for different genres
 const GENRE_SCALES = {
   edm: [0, 2, 4, 5, 7, 9, 11], // Major scale
@@ -107,7 +113,6 @@ function generateMelody() {
     currentChords,
     length: callLength,
     startStep: 0,
-    channel: MELODY_CHANNEL,
   });
 
   // Calculate response parameters based on input
@@ -133,7 +138,7 @@ function generateMelody() {
     currentChords,
     length: responseLength,
     startStep: responseStart,
-    channel: RESPONSE_CHANNEL,
+    type: NOTE_TYPES.RESPONSE,
     isResponse: true,
     referenceNotes: callNotes, // Pass call notes for thematic reference
   });
@@ -151,7 +156,7 @@ function generatePhrase({
   currentChords,
   length,
   startStep,
-  channel,
+  type,
   isResponse = false,
   referenceNotes = [],
 }) {
@@ -174,10 +179,10 @@ function generatePhrase({
       });
 
       if (note) {
-        // Add channel information to the note
+        // Add type information to the note
         notes.push({
           ...note,
-          channel,
+          type,
         });
         currentStep += note.end - note.start;
         continue;

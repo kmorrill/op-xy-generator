@@ -71,6 +71,8 @@ function playGeneratedNotes(step) {
           ? document.getElementById(`chord-extensions-send-channel`).value
           : note.type === "drone"
           ? document.getElementById(`drones-send-channel`).value
+          : note.type === "response"
+          ? document.getElementById(`response-send-channel`).value
           : note.type === "main"
           ? document.getElementById(`${prefix}-send-channel`).value
           : document.getElementById(`${prefix}-send-channel`).value;
