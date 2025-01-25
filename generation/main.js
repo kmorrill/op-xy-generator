@@ -26,14 +26,3 @@ if (!window.generationState) {
     },
   };
 }
-
-function regenerateTracks() {
-  window.generationState.tracks.drums = generateDrumPattern();
-  window.generationState.tracks.bass = generateBassLine();
-  window.generationState.tracks.chords = generateChords(window.generationState);
-  window.generationState.tracks.melody = generateMelody();
-
-  renderAllVisualizations();
-}
-
-window.regenerateTracks = regenerateTracks;

@@ -40,17 +40,35 @@ document.addEventListener("DOMContentLoaded", () => {
 // Example: Call renderAllVisualizations after generating tracks
 function regenerateTracks() {
   if (!document.getElementById("drum-lock").checked) {
-    generationState.tracks.drums = generateDrumPattern();
+    window.generationState.tracks.drums = generateDrumPattern();
   }
   if (!document.getElementById("bass-lock").checked) {
-    generationState.tracks.bass = generateBassLine();
+    window.generationState.tracks.bass = generateBassLine();
   }
   if (!document.getElementById("chord-lock").checked) {
-    generationState.tracks.chords = generateChords(generationState);
+    window.generationState.tracks.chords = generateChords(
+      window.generationState
+    );
   }
   if (!document.getElementById("melody-lock").checked) {
-    generationState.tracks.melody = generateMelody(generationState);
+    window.generationState.tracks.melody = generateMelody(
+      window.generationState
+    );
   }
+
+  // TODO this is hacky, but it works
+  if (navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess().then((midiAccess) => {
+      midiAccess.outputs.forEach((output) => {
+        // Send CC 106 value 52 twice to kill all notes
+        output.send([0xb0, 106, 52]);
+        output.send([0xb0, 106, 52]);
+        // Then send value 51
+        output.send([0xb0, 106, 51]);
+      });
+    });
+  }
+
   renderAllVisualizations();
 }
 

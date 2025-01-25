@@ -540,14 +540,22 @@
                         );
                       }
 
-                      // Update headers initially
-                      updateBeatHeaders();
-
                       // Update headers when length changes
                       document
                         .querySelectorAll('select[id$="-length"]')
                         .forEach((select) => {
-                          select.addEventListener("change", updateBeatHeaders);
+                          select.addEventListener("change", (event) => {
+                            updateBeatHeaders();
+                            // Regenerate tracks when length changes
+                            const lockElementId = `${
+                              event.target.id.split("-")[0]
+                            }-lock`;
+                            const lockElement =
+                              document.getElementById(lockElementId);
+                            if (lockElement && !lockElement.checked) {
+                              regenerateTracks();
+                            }
+                          });
                         });
 
                       // Function to update cell states from generationState
