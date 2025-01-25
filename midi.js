@@ -23,7 +23,6 @@ function setupMidiInputs() {
 
     document.querySelectorAll(".knob").forEach((knob) => {
       knob.addEventListener("input", () => {
-        console.log(`Knob changed: ${knob.id}`);
         regenerateTracks();
       });
     });

@@ -180,8 +180,6 @@ function generateChords() {
       channel: DRONE_CHANNEL,
       type: "drone",
     });
-  } else {
-    console.log("Not adding drones");
   }
 
   return chordNotes;
